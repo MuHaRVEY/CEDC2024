@@ -127,6 +127,7 @@ namespace CookingStar
 			}
 		}
 
+		
 
 		public IEnumerator EnableDelayedStart()
 		{
@@ -434,7 +435,15 @@ namespace CookingStar
 			}
 		}
 
-
+		// 새로운 메서드: 손님이 떠날 때 호출 - 직접 추가함. 
+		public void OnCustomerLeave()
+		{
+			if (!gameIsFinished) // 게임이 아직 끝나지 않았을 때만 완료 처리
+			{
+				gameIsFinished = true;
+				StartCoroutine(processGameFinish());
+			}
+		}
 
 		//***************************************************************************//
 		// finish the game gracefully
@@ -444,27 +453,37 @@ namespace CookingStar
 			SfxPlayer.instance.PlaySfx(6);
 
 			yield return new WaitForSeconds(1.5f);  //absolutely required.
-			print("game is finished");
-			//tell all customers to leave, if they are still in the shop :)))
-			GameObject[] customersInScene = GameObject.FindGameObjectsWithTag("customer");
-			if (customersInScene.Length > 0)
-			{
-				foreach (var customer in customersInScene)
-				{
-					customer.GetComponent<CustomerController>().leave();
-				}
-			}
-			//did we reached the level goal?
-			if (totalMoneyMade >= requiredBalance)
-			{
-				print("We beat the mission :))))");
-				SfxPlayer.instance.PlaySfx(7);
-			}
-			else
-			{
-				print("better luck next time :((((");
-				SfxPlayer.instance.PlaySfx(8);
-			}
+			print("Game is finished! Let's see the result...");
+			// 결과 패널 표시
+			gameoverPanelHolder.SetActive(true);
+
+			// 게임 완료 처리
+			endPanelLabelUI.text = "Success!";
+			missionTargetUI.text = totalMoneyMade + " of " + requiredBalance;
+			missionTimeUI.text = (int)Time.timeSinceLevelLoad + " seconds";
+			resultStarsUI.sprite = availableStarIcons[3];
+			SfxPlayer.instance.PlaySfx(7);
+
+			// //tell all customers to leave, if they are still in the shop :)))
+			// GameObject[] customersInScene = GameObject.FindGameObjectsWithTag("customer");
+			// if (customersInScene.Length > 0)
+			// {
+			// 	foreach (var customer in customersInScene)
+			// 	{
+			// 		customer.GetComponent<CustomerController>().leave();
+			// 	}
+			// }
+			// //did we reached the level goal?
+			// if (totalMoneyMade >= requiredBalance)
+			// {
+			// 	print("We beat the mission :))))");
+			// 	SfxPlayer.instance.PlaySfx(7);
+			// }
+			// else
+			// {
+			// 	print("better luck next time :((((");
+			// 	SfxPlayer.instance.PlaySfx(8);
+			// }
 
 		}
 

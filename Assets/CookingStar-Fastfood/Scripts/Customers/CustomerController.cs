@@ -6,95 +6,80 @@ namespace CookingStar
 {
     public class CustomerController : MonoBehaviour
     {
-        /// <summary>
-        /// This class handles every thing related to a customer, including the wishlist, ingredients, patience and animations.
-        /// </summary>
+        private static CustomerController instance = null; // ���� �ν��Ͻ��� Ȯ���ϱ� ���� ����
 
         [Header("Customer Settings")]
-        public float customerPatience = 30.0f;              //seconds (default = 30 or whatever you wish)
-        public int customerNeeds;                           //Product ID which the customer wants. if left to 0, it randomly chooses a product.
-                                                            //set anything but 0 to override it.
-                                                            //max limit is the length of the availableProducts array.    
-
-        public int customerSidereqNeeds = -1;               //Notice! tutorial customers should be able to ask for specific sidereq items (coffee)
+        public float customerPatience = 30.0f;
+        public int customerNeeds;
+        public int customerSidereqNeeds = -1;
         public float customerMoveSpeed = 3f;
         public float askingSideRequestChance = 0.4f;
         public float sideReqWithNoMainOrderChance = 0.2f;
 
         [Space(20)]
-        public GameObject positionDummy;                    //dummy to indicate where items should be displayed over customer's head
+        public GameObject positionDummy;
 
-        //*** Customer Moods ***//
-        //We use different materials for each mood
-        /* Currently we have 4 moods: 
-         [0]Defalut
-         [1]Bored 
-         [2]Satisfied
-         [3]Angry
-         we change to appropriate material whenever needed. 
-        */
         public Material[] customerMoods;
         public GameObject customerBody;
         private int moodIndex;
-        internal int mySeat;                        //Do not modify this.
-        internal Vector3 destination;               //Do not modify this.
-        private GameObject gameController;          //Do not modify this.
-        public bool isCloseEnoughToDelivery;        //Do not modify this.
-        public bool isCloseEnoughToCandy;           //Do not modify this. 
-        public bool isCloseEnoughToSideRequest;     //Do not modify this.
-        public GameObject[] availableProducts;      //list of all available product to choose from
-        public GameObject[] availableIngredients;   //List of all available ingredients to cook above products
-        public GameObject[] availableSideReqs;      //List of all available side-request items
+        internal int mySeat;
+        internal Vector3 destination;
+        private GameObject gameController;
+        public bool isCloseEnoughToDelivery;
+        public bool isCloseEnoughToCandy;
+        public bool isCloseEnoughToSideRequest;
+        public GameObject[] availableProducts;
+        public GameObject[] availableIngredients;
+        public GameObject[] availableSideReqs;
 
-        //Customer variables
-        private string customerName;                //random name
-        private int productIngredients;             //ingredients of the choosen product
-        private int[] productIngredientsIDs;        //IDs of the above ingredients
-        internal float currentCustomerPatience;     //current patience of the customer
-        private bool isOnSeat;                      //is customer on his seat?
-        private int customerSideReq;                //-1 means no side-request. anything but -1 points to a side request.
-        private bool sideRequestIsFulfilled;        //flag to let us know if we have delivered the side-request
-        private bool mainOrderIsFulfilled;          //flag to let us know if we have delivered the main order
-        private bool isOnlyAskingForDrink;          //flag to let us know if this customer only wants a drink (side-req) and no main food
+        private string customerName;
+        private int productIngredients;
+        private int[] productIngredientsIDs;
+        internal float currentCustomerPatience;
+        private bool isOnSeat;
+        private int customerSideReq;
+        private bool sideRequestIsFulfilled;
+        private bool mainOrderIsFulfilled;
+        private bool isOnlyAskingForDrink;
 
-        //Patience bar GUI items and vars
         private bool patienceBarSliderFlag;
         internal float leaveTime;
         private float creationTime;
         private bool isLeaving;
-        public GameObject requestBubble;            //reference to (gameObject) bubble over customers head
-        public GameObject money3dText;              //UI text over customers head after successful delivery
+        public GameObject requestBubble;
+        public GameObject money3dText;
 
-        //New patience Bar
         public GameObject patienceBarMain;
         public GameObject patienceBarFgPivot;
 
-        //Colored patience bar
         public Renderer patienceBarBody;
         public Material[] availablePatienceBarColors;
 
-        //New visuals
         public GameObject visualGfx;
         public GameObject coinsGfx;
 
-        //Transforms
         private Vector3 startingPosition;
 
-        //All about more than 1 plate goes here:
-        private GameObject[] serverPlates;          //all available plates inside the game
-        private float[] distanceToPlates;           //distance to all available plates
-        private GameObject target;                  //which plate is nearest? that will be the main target
+        private GameObject[] serverPlates;
+        private float[] distanceToPlates;
+        private GameObject target;
 
-        //Special character adjustment
         private float clientOffsetY = -0.3f;
         private float ySineDivision = 14f;
 
         [Space(20)]
-        public int tutorialCustomerID = 0;          //Not needed in the main game. This is only needed in tutorial mode
-
+        public int tutorialCustomerID = 0;
 
         void Awake()
         {
+            // �ν��Ͻ��� �̹� �����ϴ��� Ȯ��
+            if (instance != null)
+            {
+                Destroy(gameObject); // �̹� �մ� �ν��Ͻ��� ���� ��� ���� ������ ������Ʈ�� �ı�
+                return;
+            }
+            instance = this; // �� ������Ʈ�� ���� �ν��Ͻ��� ����
+
             target = null;
             serverPlates = GameObject.FindGameObjectsWithTag("serverPlate");
             distanceToPlates = new float[serverPlates.Length];
@@ -748,38 +733,47 @@ namespace CookingStar
         /// </summary>
         /// <returns></returns>
         public IEnumerator leave()
+{
+    // prevent double animation
+    if (isLeaving)
+        yield break;
+    isLeaving = true;
+
+    // Change the tag of this customer, so it can't receive new deliveries
+    gameObject.tag = "Untagged";
+
+    // Animate patience bar
+    StartCoroutine(animate(Time.time, patienceBarMain, 0.7f, 0.8f));
+    yield return new WaitForSeconds(0.3f);
+
+    // Animate request bubble
+    StartCoroutine(animate(Time.time, requestBubble, 0.75f, 0.95f));
+    yield return new WaitForSeconds(0.4f);
+
+    // Move customer out of the scene
+    while (transform.position.x < 10)
+    {
+        transform.position = new Vector3(transform.position.x + (Time.deltaTime * customerMoveSpeed),
+                                         startingPosition.y + clientOffsetY + (Mathf.Sin(Time.time * 10) / ySineDivision),
+                                         transform.position.z);
+
+        if (transform.position.x >= 6)
         {
-            //prevent double animation
-            if (isLeaving)
-                yield break;
-            isLeaving = true;
-
-            //we need to change the tag of this customer, in order to not be able to receive new deliveries.
-            gameObject.tag = "Untagged";
-
-            //animate (close) patienceBar
-            StartCoroutine(animate(Time.time, patienceBarMain, 0.7f, 0.8f));
-            yield return new WaitForSeconds(0.3f);
-
-            //animate (close) request bubble
-            StartCoroutine(animate(Time.time, requestBubble, 0.75f, 0.95f));
-            yield return new WaitForSeconds(0.4f);
-
-            while (transform.position.x < 10)
+            // Notify MainGameController that this customer is leaving
+            MainGameController mainController = FindObjectOfType<MainGameController>();
+            if (mainController != null)
             {
-                transform.position = new Vector3(transform.position.x + (Time.deltaTime * customerMoveSpeed),
-                                                 startingPosition.y + clientOffsetY + (Mathf.Sin(Time.time * 10) / ySineDivision),
-                                                 transform.position.z);
-
-                if (transform.position.x >= 6)
-                {
-                    gameController.GetComponent<MainGameController>().availableSeatForCustomers[mySeat] = true;
-                    Destroy(gameObject);
-                    yield break;
-                }
-                yield return 0;
+                mainController.OnCustomerLeave();
             }
+
+            gameController.GetComponent<MainGameController>().availableSeatForCustomers[mySeat] = true;
+            Destroy(gameObject); // Remove customer from the game
+            yield break;
         }
+        yield return 0;
+    }
+}
+
 
 
         /// <summary>
