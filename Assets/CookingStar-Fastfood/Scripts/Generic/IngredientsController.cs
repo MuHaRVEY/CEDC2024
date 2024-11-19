@@ -5,6 +5,46 @@ namespace CookingStar
 {
 	public class IngredientsController : MonoBehaviour
 	{
+
+
+		//테스트용 stt
+//  private GoogleSpeechController googleSpeechController;
+
+    // void Start()
+    // {
+    //     // Google Speech Controller 초기화
+    //     googleSpeechController = GetComponent<GoogleSpeechController>();
+    // }
+
+	// 마이크 테스트 해보던 코드
+    // void Update()
+    // {
+    //     if (Input.GetKeyDown(KeyCode.Space)) // 스페이스바로 테스트
+    //     {
+    //         googleSpeechController.StartRecognition(); 
+    //     }
+	// 	// 기존 재료 관리 로직
+    // 	ManagePlayerDrag();
+	// 	if (Input.touches.Length < 1 && !Input.GetMouseButton(0)) //원래 있던 코드 여기로 옮김
+	// 	{
+	// 		itemIsInHand = false;
+	// 	}
+    // }
+
+    public void HandleRecognizedText(string text)
+    {
+        if (text.Contains("lettuce"))
+        {
+            Debug.Log("Adding lettuce!");
+            // 재료 추가 로직
+        }
+        else if (text.Contains("tomato"))
+        {
+            Debug.Log("Adding tomato!");
+            // 재료 추가 로직
+        }
+    }
+		// 테스트용 stt fin
 		/// <summary>
 		/// Main class for Handling all things related to ingredients
 		/// </summary>
@@ -33,6 +73,7 @@ namespace CookingStar
 			itemIsInHand = false;
 		}
 
+		//update 함수 원본 드래그로 가져오기?
 
 		void Update()
 		{
@@ -54,7 +95,7 @@ namespace CookingStar
 		/// </summary>
 		private RaycastHit hitInfo;
 		private Ray ray;
-		void ManagePlayerDrag()
+		void ManagePlayerDrag() 
 		{
 			//Mouse of touch?
 			if (Input.touches.Length > 0 && Input.touches[0].phase == TouchPhase.Moved)
