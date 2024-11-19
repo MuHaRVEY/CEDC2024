@@ -14,6 +14,12 @@ namespace CookingStar
         {
             instance = this;
         }
+        //패킹씬 이동 추가
+        public void LoadPackingScene()
+        {
+        SfxPlayer.instance.PlaySfx(0);
+        StartCoroutine(LoadSceneDelayed("Packing"));
+        }
 
         public void LoadShop()
         {
@@ -109,5 +115,8 @@ namespace CookingStar
             GameObject pausePanel = GameObject.FindGameObjectWithTag("PausePanelUI");
             pausePanel.transform.GetChild(0).gameObject.SetActive(false);
         }
+
     }
+
+    
 }
