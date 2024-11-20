@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.IO.Ports;
+using System.Collections;
 
 public class BurgerPacking : MonoBehaviour
 {
@@ -256,14 +257,22 @@ public class BurgerPacking : MonoBehaviour
             HideGraphElements();
 
         // 모션을 시작
-            StartBurgerMotion();
+            StartCoroutine(WaitAndStartBurgerMotion(2f));
         }
         else
         {
             Debug.Log("Packing Failed.");
             if (failMessage != null) failMessage.SetActive(true);
+            HideGraphElements();
         }
     }
+    private IEnumerator WaitAndStartBurgerMotion(float waitTime)
+    {
+        yield return new WaitForSeconds(waitTime); // 대기
+        StartBurgerMotion(); // 모션 시작
+        Debug.Log("Burger motion started after waiting.");
+    }
+
     private void HideGraphElements()
     {
         // GraphCanvas 안의 그래프 요소들을 비활성화
