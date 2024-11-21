@@ -6,7 +6,18 @@ public class BurgerPacking : MonoBehaviour
     public Transform pack; // 목표 위치 (포장지)
     public float moveSpeed = 5f; // 이동 속도
 
+    public GameObject gameOverPanel; // 게임 오버 창
+
     private bool isMoving = false; // 이동 상태를 체크
+
+    void Start()
+    {
+        // 게임 오버 창 비활성화
+        if (gameOverPanel != null)
+        {
+            gameOverPanel.SetActive(false);
+        }
+    }
 
     void Update()
     {
@@ -32,7 +43,22 @@ public class BurgerPacking : MonoBehaviour
                 burgerForPacking.position = pack.position; // 정확히 포장지 위치로 설정
                 burgerForPacking.localScale = Vector3.zero; // 크기를 0으로 설정 (사라지듯 연출)
                 Debug.Log("Burger reached the pack!");
+
+                // 게임 오버 창 활성화
+                ShowGameOverPanel();
             }
+        }
+    }
+
+    void ShowGameOverPanel()
+    {
+        if (gameOverPanel != null)
+        {
+            gameOverPanel.SetActive(true);
+        }
+        else
+        {
+            Debug.LogWarning("GameOverPanel is not assigned!");
         }
     }
 }
