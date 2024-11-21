@@ -84,7 +84,6 @@ namespace CookingStar
 		public Text missionTargetUI;
 		public Text missionTimeUI;
 		public Image resultStarsUI;
-		public Image resultHamburgersUI; //추가
 		public Text tutorialIsCompletedUI;
 		public Text endPanelLabelUI;
 		public GameObject topUIHolder;
@@ -101,7 +100,6 @@ namespace CookingStar
 
 		[Header("Resources")]
 		public Sprite[] availableStarIcons;
-		public Sprite[] availableHamburgerIcons; //햄버거 아이콘 전용 추가
 
 		public void Awake()
 		{
@@ -463,8 +461,7 @@ namespace CookingStar
 			endPanelLabelUI.text = "Success!";
 			missionTargetUI.text = totalMoneyMade + " of " + requiredBalance;
 			missionTimeUI.text = (int)Time.timeSinceLevelLoad + " seconds";
-			resultStarsUI.sprite = availableStarIcons[5];
-			resultHamburgersUI.sprite = availableHamburgerIcons[4];
+			resultStarsUI.sprite = availableStarIcons[3];
 			SfxPlayer.instance.PlaySfx(7);
 
 			// //tell all customers to leave, if they are still in the shop :)))
@@ -509,7 +506,6 @@ namespace CookingStar
 				missionTargetUI.text = totalMoneyMade + " of " + requiredBalance;
 				missionTimeUI.text = (int)Time.timeSinceLevelLoad + " of " + availableTime;
 				resultStarsUI.sprite = availableStarIcons[0];
-				resultHamburgersUI.sprite = availableHamburgerIcons[0];
 
 				SfxPlayer.instance.PlaySfx(6);
 				yield return new WaitForSeconds(2.0f);
@@ -534,7 +530,6 @@ namespace CookingStar
 				missionTargetUI.text = totalMoneyMade + " of " + requiredBalance;
 				missionTimeUI.text = (int)Time.timeSinceLevelLoad + " of " + availableTime;
 				resultStarsUI.sprite = availableStarIcons[GetLevelStars()];
-				resultHamburgersUI.sprite = availableHamburgerIcons[GetLevelHambugers()];
 
 				SfxPlayer.instance.PlaySfx(7);
 
@@ -564,8 +559,7 @@ namespace CookingStar
 				//Show Stats
 				missionTargetUI.text = "N/A";
 				missionTimeUI.text = "N/A";
-				resultStarsUI.sprite = availableStarIcons[5];
-				resultHamburgersUI.sprite = availableHamburgerIcons[4];
+				resultStarsUI.sprite = availableStarIcons[3];
 				endPanelLabelUI.text = "Congratulations!";
 				retryButton.SetActive(false);
 				tutorialModeIndicatorUI.SetActive(true);
@@ -580,14 +574,10 @@ namespace CookingStar
 			float remainingTime = availableTime - Time.timeSinceLevelLoad;
 
 			if (remainingTime >= 60)
-				stars = 5;
-			else if (remainingTime < 60 && remainingTime >= 50)
-				stars = 4;
-			else if (remainingTime < 50 && remainingTime >= 35)
 				stars = 3;
-			else if (remainingTime < 35 && remainingTime >= 20)
+			else if (remainingTime < 60 && remainingTime >= 30)
 				stars = 2;
-			else if (remainingTime < 20 && remainingTime > 0)
+			else if (remainingTime < 30 && remainingTime > 0)
 				stars = 1;
 			else
 				stars = 0;
@@ -595,25 +585,7 @@ namespace CookingStar
 			return stars;
 		}
 
-		public int GetLevelHambugers()
 
-		{
-			int hamburgers = 1;
-			float remainingTime = availableTime - Time.timeSinceLevelLoad;
-
-			if (remainingTime >= 60)
-				hamburgers = 5;
-			else if (remainingTime < 60 && remainingTime >= 50)
-				hamburgers = 4;
-			else if (remainingTime < 50 && remainingTime >= 35)
-				hamburgers = 3;
-			else if (remainingTime < 35 && remainingTime >= 20)
-				hamburgers = 2;
-			else
-				hamburgers = 1;
-
-			return hamburgers;
-		}
 
 		public void ForceCustomersToLeave()
 		{

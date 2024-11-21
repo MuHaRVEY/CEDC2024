@@ -44,9 +44,6 @@ public class BurgerPacking : MonoBehaviour
     private bool isPackingActive = false;
     private bool isPackingSuccess = false;
 
-    public GameObject gameOverPanel; // 게임 오버 창
-
-
     void Start()
     {
         // Serial port initialization
@@ -60,11 +57,7 @@ public class BurgerPacking : MonoBehaviour
         {
             Debug.LogError("Failed to open serial port: " + e.Message);
         }
-        // 게임 오버 창 비활성화
-        if (gameOverPanel != null)
-        {
-            gameOverPanel.SetActive(false);
-        }
+
         // Graph scaling
         ScaleGraphToBackground();
 
@@ -118,9 +111,6 @@ public class BurgerPacking : MonoBehaviour
                 burgerForPacking.position = pack.position; // 정확히 포장지 위치로 설정
                 burgerForPacking.localScale = Vector3.zero; // 크기를 0으로 설정 (사라지듯 연출)
                 Debug.Log("Burger reached the pack!");
-
-                // 게임 오버 창 활성화
-                
             }
         }
     }
@@ -274,7 +264,6 @@ public class BurgerPacking : MonoBehaviour
             Debug.Log("Packing Failed.");
             if (failMessage != null) failMessage.SetActive(true);
             HideGraphElements();
-            StartCoroutine(WaitAndShowGameOverPanel(5f));
         }
     }
     private IEnumerator WaitAndStartBurgerMotion(float waitTime)
@@ -282,14 +271,6 @@ public class BurgerPacking : MonoBehaviour
         yield return new WaitForSeconds(waitTime); // 대기
         StartBurgerMotion(); // 모션 시작
         Debug.Log("Burger motion started after waiting.");
-        StartCoroutine(WaitAndShowGameOverPanel(5f));
-    }
-
-    private IEnumerator WaitAndShowGameOverPanel(float waitTime)
-    {
-        yield return new WaitForSeconds(waitTime); // 대기
-        ShowGameOverPanel(); // Game Over 패널 활성화
-        Debug.Log("Game Over Panel shown after motion.");
     }
 
     private void HideGraphElements()
@@ -317,18 +298,6 @@ public class BurgerPacking : MonoBehaviour
             yScale = graphHeight / maxDataValue; // Adjust yScale based on height
 
             Debug.Log($"Graph scaled: Width={graphWidth}, Height={graphHeight}, XSpacing={xSpacing}, YScale={yScale}");
-        }
-    }            
-    private void ShowGameOverPanel()
-    {
-        if (gameOverPanel != null)
-        {
-            gameOverPanel.SetActive(true);
-            Debug.Log("Game Over Panel Activated.");
-        }
-        else
-        {
-            Debug.LogWarning("GameOverPanel is not assigned!");
         }
     }
 }
