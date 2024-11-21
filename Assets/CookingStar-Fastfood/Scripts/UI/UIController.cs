@@ -103,7 +103,20 @@ namespace CookingStar
             Unpause();
             SceneManager.LoadScene("Menu");
         }
-
+        public void LoadMenuFromPackingScene() //추가
+        {
+            Debug.Log("Returning to Menu from Packing scene...");
+        
+            // SceneManager를 사용해 Menu 씬 로드
+            try
+            {
+                SceneManager.LoadScene("Menu"); // "Menu"는 메뉴 씬 이름 (Build Settings에서 확인)
+            }
+            catch
+            {
+                Debug.LogError("Menu scene could not be loaded. Check if it is added in Build Settings.");
+            }
+        }
         public void DisplayPausePanel()
         {
             GameObject pausePanel = GameObject.FindGameObjectWithTag("PausePanelUI");
