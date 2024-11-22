@@ -9,8 +9,8 @@ namespace CookingStar
         private static CustomerController instance = null; // ���� �ν��Ͻ��� Ȯ���ϱ� ���� ����
 
         [Header("Customer Settings")]
-        public float customerPatience = 30.0f;
-        public int customerNeeds;
+        public float customerPatience = 120.0f; //기본값을 120으로 수정 
+         public int customerNeeds;
         public int customerSidereqNeeds = -1;
         public float customerMoveSpeed = 3f;
         public float askingSideRequestChance = 0.4f;
@@ -30,7 +30,7 @@ namespace CookingStar
         public bool isCloseEnoughToSideRequest;
         public GameObject[] availableProducts;
         public GameObject[] availableIngredients;
-        public GameObject[] availableSideReqs;
+        // public GameObject[] availableSideReqs;
 
         private string customerName;
         private int productIngredients;
@@ -113,7 +113,7 @@ namespace CookingStar
         /// Here we will initialize all customer related variables.
         /// </summary>
         private GameObject productImage;
-        private GameObject sideReq;
+        // private GameObject sideReq;
         void Init()
         {
             //we give this customer a nice name
@@ -138,34 +138,34 @@ namespace CookingStar
                 }
             }
 
-            //also let's give this customer a chance to wish a side-request.
-            if (askingSideRequestChance > Random.value)
-                customerSideReq = Random.Range(0, availableSideReqs.Length);
-            else
-                customerSideReq = -1;
+            // //also let's give this customer a chance to wish a side-request.
+            // if (askingSideRequestChance > Random.value)
+            //     customerSideReq = Random.Range(0, availableSideReqs.Length);
+            // else
+            //     customerSideReq = -1;
 
-            //give the customers a chance to ask for no main food, and just ask for a drink (side-req)
-            //with 20% chance, we create a customer that only wants a drink.
-            if (sideReqWithNoMainOrderChance > Random.value) //sideReqWithNoMainOrderChance
-            {
-                isOnlyAskingForDrink = true;    //only wants a drink
-                mainOrderIsFulfilled = true;    //we set this flag to true instantly, as this customer does not have any main order.
+            // //give the customers a chance to ask for no main food, and just ask for a drink (side-req)
+            // //with 20% chance, we create a customer that only wants a drink.
+            // if (sideReqWithNoMainOrderChance > Random.value) //sideReqWithNoMainOrderChance
+            // {
+            //     isOnlyAskingForDrink = true;    //only wants a drink
+            //     mainOrderIsFulfilled = true;    //we set this flag to true instantly, as this customer does not have any main order.
 
-                if (customerSidereqNeeds == -1)
-                    customerSideReq = Random.Range(0, availableSideReqs.Length);    //we force him to order a side-req!
-                else
-                    customerSideReq = customerSidereqNeeds;
+            //     if (customerSidereqNeeds == -1)
+            //         customerSideReq = Random.Range(0, availableSideReqs.Length);    //we force him to order a side-req!
+            //     else
+            //         customerSideReq = customerSidereqNeeds;
 
-                print(customerName + " only wants a drink! (no main order)");
-            }
+            //     print(customerName + " only wants a drink! (no main order)");
+            // }
 
             //debug customer's wish	
-            if (!isOnlyAskingForDrink)
-            {
-                print(customerName + " would like a " + availableProducts[customerNeeds].name + " and can wait for " + customerPatience + " seconds");
-                if (customerSideReq != -1)
-                    print(customerName + " also likes a " + availableSideReqs[customerSideReq].name);
-            }
+            // if (!isOnlyAskingForDrink)
+            // {
+            //     print(customerName + " would like a " + availableProducts[customerNeeds].name + " and can wait for " + customerPatience + " seconds");
+            //     // if (customerSideReq != -1)
+            //     //     print(customerName + " also likes a " + availableSideReqs[customerSideReq].name);
+            // }
 
             //get and show product's image
             productImage = Instantiate(availableProducts[customerNeeds], positionDummy.transform.position, Quaternion.Euler(0, 0, 0)) as GameObject;
@@ -175,34 +175,34 @@ namespace CookingStar
             productImage.transform.localPosition = new Vector3(-0.07f, productImage.transform.localPosition.y, productImage.transform.localPosition.z); //Adjust X pos
 
             //if customer wants a side-request, show it
-            if (customerSideReq != -1)
-            {
-                sideReq = Instantiate(availableSideReqs[customerSideReq], positionDummy.transform.position + new Vector3(0, -0.175f, 0), Quaternion.Euler(0, 0, 0)) as GameObject;
+            // if (customerSideReq != -1)
+            // {
+            //     sideReq = Instantiate(availableSideReqs[customerSideReq], positionDummy.transform.position + new Vector3(0, -0.175f, 0), Quaternion.Euler(0, 0, 0)) as GameObject;
 
-                //move the main order a little up! to make some space for the side-request
-                productImage.transform.position = new Vector3(productImage.transform.position.x - 0.05f, productImage.transform.position.y + 0.25f, productImage.transform.position.z);
-                productImage.transform.localScale *= 0.8f;
-                sideReq.transform.localScale = new Vector3(0.7f, 0.7f, 0.001f);
-                sideReq.transform.localScale *= 0.7f;
-                sideReq.transform.parent = requestBubble.transform;
-                sideReq.transform.localPosition = new Vector3(-0.05f, sideReq.transform.localPosition.y - 0.15f, sideReq.transform.localPosition.z); //Reset X pos
+            //     //move the main order a little up! to make some space for the side-request
+            //     productImage.transform.position = new Vector3(productImage.transform.position.x - 0.05f, productImage.transform.position.y + 0.25f, productImage.transform.position.z);
+            //     productImage.transform.localScale *= 0.8f;
+            //     sideReq.transform.localScale = new Vector3(0.7f, 0.7f, 0.001f);
+            //     sideReq.transform.localScale *= 0.7f;
+            //     sideReq.transform.parent = requestBubble.transform;
+            //     sideReq.transform.localPosition = new Vector3(-0.05f, sideReq.transform.localPosition.y - 0.15f, sideReq.transform.localPosition.z); //Reset X pos
 
-                //if this side-req item needs to be processed, show it (ask it) with processed image :)
-                if (sideReq.GetComponent<SideRequestMover>().beforeAfterMat.Length > 1)
-                    sideReq.GetComponent<SideRequestMover>().SetMaterial(1);
+            //     //if this side-req item needs to be processed, show it (ask it) with processed image :)
+            //     if (sideReq.GetComponent<SideRequestMover>().beforeAfterMat.Length > 1)
+            //         sideReq.GetComponent<SideRequestMover>().SetMaterial(1);
 
-                sideReq.GetComponent<SideRequestMover>().enabled = false;
-            }
+            //     sideReq.GetComponent<SideRequestMover>().enabled = false;
+            // }
 
-            //we need to hide the image of main order, if this customer only wants a side-req (drink)
-            if (isOnlyAskingForDrink)
-            {
-                sideReq.transform.position = positionDummy.transform.position;
-                sideReq.transform.localPosition = new Vector3(-0.02f, sideReq.transform.localPosition.y, sideReq.transform.localPosition.z); //Reset X pos
-                sideReq.transform.localScale *= 1.5f;
+            // //we need to hide the image of main order, if this customer only wants a side-req (drink)
+            // if (isOnlyAskingForDrink)
+            // {
+            //     sideReq.transform.position = positionDummy.transform.position;
+            //     sideReq.transform.localPosition = new Vector3(-0.02f, sideReq.transform.localPosition.y, sideReq.transform.localPosition.z); //Reset X pos
+            //     sideReq.transform.localScale *= 1.5f;
 
-                productImage.SetActive(false);
-            }
+            //     productImage.SetActive(false);
+            // }
 
             //get product ingredients
             productIngredients = availableProducts[customerNeeds].GetComponent<ProductManager>().totalIngredients;
@@ -341,10 +341,10 @@ namespace CookingStar
 
             //check if this customer is close enough to a side-request delivery, in order to receive it.
             //we must also check if this customer wants a side-request or not!
-            if (SideRequestsController.canDeliverSideRequest && customerSideReq != -1 && gameObject.tag == "customer")
-            {
-                CheckDistanceToSideRequest();
-            }
+            // if (SideRequestsController.canDeliverSideRequest && customerSideReq != -1 && gameObject.tag == "customer")
+            // {
+            //     CheckDistanceToSideRequest();
+            // }
 
             //check the status of customers with both main order and side-request, and look if they already received both their orders.
             if (sideRequestIsFulfilled && mainOrderIsFulfilled && !isLeaving)
@@ -485,7 +485,7 @@ namespace CookingStar
 
             while (currentCustomerPatience > 0)
             {
-                currentCustomerPatience -= Time.deltaTime * Application.targetFrameRate * 0.02f;
+                currentCustomerPatience -= Time.deltaTime * Application.targetFrameRate * 0.005f; // 0.02f에서 수정함 
                 patienceBarFgPivot.transform.localScale = new Vector3(1, currentCustomerPatience / customerPatience, 100);
                 yield return 0;
             }
@@ -638,7 +638,7 @@ namespace CookingStar
                 //we subtract 1 from _ID, because we start side-request items from 0, while Ids starts from 1.
                 //we received the right side-request, so the side-req is fulfilled. But we should wait for the main order status.
                 //first hide the side-request
-                sideReq.SetActive(false);
+                // sideReq.SetActive(false);
                 SfxPlayer.instance.PlaySfx(13);
                 sideRequestIsFulfilled = true;
             }
@@ -677,21 +677,21 @@ namespace CookingStar
             int mainOrderPrice = 0;
 
             //if customer is only asking for a drink with no main order
-            if (isOnlyAskingForDrink)
-            {
-                mainOrderPrice = 0;
-                sideReqPrice = availableSideReqs[customerSideReq].GetComponent<SideRequestMover>().sideReqPrice;
+            // if (isOnlyAskingForDrink)
+            // {
+            //     mainOrderPrice = 0;
+            //     sideReqPrice = availableSideReqs[customerSideReq].GetComponent<SideRequestMover>().sideReqPrice;
 
-            }
-            else
-            {
-                //calculate the price of main order
-                mainOrderPrice = availableProducts[customerNeeds].GetComponent<ProductManager>().price;
+            // }
+            // else
+            // {
+            //     //calculate the price of main order
+            //     mainOrderPrice = availableProducts[customerNeeds].GetComponent<ProductManager>().price;
 
-                //if customer also wants a sideRed item, calculate it as well
-                if (customerSideReq != -1)
-                    sideReqPrice = availableSideReqs[customerSideReq].GetComponent<SideRequestMover>().sideReqPrice;
-            }
+            //     //if customer also wants a sideRed item, calculate it as well
+            //     if (customerSideReq != -1)
+            //         sideReqPrice = availableSideReqs[customerSideReq].GetComponent<SideRequestMover>().sideReqPrice;
+            // }
 
             //debug
             print("mainOrderPrice: " + mainOrderPrice + " // sideReqPrice: " + sideReqPrice);
