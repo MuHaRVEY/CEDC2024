@@ -570,7 +570,7 @@ namespace CookingStar
         /// <summary>
         /// If order is delivered correctly
         /// </summary>
-        void OrderIsCorrect()
+        public void OrderIsCorrect()
         {
             print("Order is correct.");
 
@@ -594,7 +594,7 @@ namespace CookingStar
         /// <summary>
         /// If order is NOT delivered correctly
         /// </summary>
-        void OrderIsIncorrect()
+        public void OrderIsIncorrect()
         {
             print("Order is not correct.");
             moodIndex = 3;
@@ -733,46 +733,46 @@ namespace CookingStar
         /// </summary>
         /// <returns></returns>
         public IEnumerator leave()
-{
-    // prevent double animation
-    if (isLeaving)
-        yield break;
-    isLeaving = true;
-
-    // Change the tag of this customer, so it can't receive new deliveries
-    gameObject.tag = "Untagged";
-
-    // Animate patience bar
-    StartCoroutine(animate(Time.time, patienceBarMain, 0.7f, 0.8f));
-    yield return new WaitForSeconds(0.3f);
-
-    // Animate request bubble
-    StartCoroutine(animate(Time.time, requestBubble, 0.75f, 0.95f));
-    yield return new WaitForSeconds(0.4f);
-
-    // Move customer out of the scene
-    while (transform.position.x < 10)
-    {
-        transform.position = new Vector3(transform.position.x + (Time.deltaTime * customerMoveSpeed),
-                                         startingPosition.y + clientOffsetY + (Mathf.Sin(Time.time * 10) / ySineDivision),
-                                         transform.position.z);
-
-        if (transform.position.x >= 6)
         {
-            // Notify MainGameController that this customer is leaving
-            MainGameController mainController = FindObjectOfType<MainGameController>();
-            if (mainController != null)
-            {
-                mainController.OnCustomerLeave();
-            }
+            // prevent double animation
+            if (isLeaving)
+                yield break;
+            isLeaving = true;
 
-            gameController.GetComponent<MainGameController>().availableSeatForCustomers[mySeat] = true;
-            Destroy(gameObject); // Remove customer from the game
-            yield break;
+            // Change the tag of this customer, so it can't receive new deliveries
+            gameObject.tag = "Untagged";
+
+            // Animate patience bar
+            StartCoroutine(animate(Time.time, patienceBarMain, 0.7f, 0.8f));
+            yield return new WaitForSeconds(0.3f);
+
+            // Animate request bubble
+            StartCoroutine(animate(Time.time, requestBubble, 0.75f, 0.95f));
+            yield return new WaitForSeconds(0.4f);
+
+            // Move customer out of the scene
+            while (transform.position.x < 10)
+            {
+                transform.position = new Vector3(transform.position.x + (Time.deltaTime * customerMoveSpeed),
+                                                startingPosition.y + clientOffsetY + (Mathf.Sin(Time.time * 10) / ySineDivision),
+                                                transform.position.z);
+
+                if (transform.position.x >= 6)
+                {
+                    // Notify MainGameController that this customer is leaving
+                    MainGameController mainController = FindObjectOfType<MainGameController>();
+                    if (mainController != null)
+                    {
+                        mainController.OnCustomerLeave();
+                    }
+
+                    gameController.GetComponent<MainGameController>().availableSeatForCustomers[mySeat] = true;
+                    Destroy(gameObject); // Remove customer from the game
+                    yield break;
+                }
+                yield return 0;
+            }
         }
-        yield return 0;
-    }
-}
 
 
 
