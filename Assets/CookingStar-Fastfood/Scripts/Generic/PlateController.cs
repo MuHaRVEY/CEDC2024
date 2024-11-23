@@ -102,7 +102,9 @@ namespace CookingStar
             return customersInScene;
         }
 
-
+        // 추가: 비활성화할 버튼 및 텍스트 참조
+        public GameObject recordButton; // 레코드 버튼
+        public List<GameObject> uiTextElements; // 비활성화할 텍스트 리스트
         private Vector3 _Pos;
         IEnumerator CreateDeliveryPackage()
         {
@@ -154,6 +156,30 @@ namespace CookingStar
                     //if customer got the delivery
                     if (delivered)
                     {
+                        // 추가: 레코드 버튼과 텍스트 비활성화
+                        if (recordButton != null)
+                        {
+                            recordButton.SetActive(false);
+                            Debug.Log("Record button has been disabled.");
+                        }
+                        else
+                        {
+                            Debug.LogWarning("Record button is not assigned in the Inspector.");
+                        }
+
+                        if (uiTextElements != null && uiTextElements.Count > 0)
+                        {
+                            foreach (GameObject textElement in uiTextElements)
+                            {
+                                textElement.SetActive(false);
+                            }
+                            Debug.Log("UI text elements have been disabled.");
+                        }
+                        else
+                        {
+                            Debug.LogWarning("No UI text elements assigned in the Inspector.");
+                        } //여기까지 추가
+                        
                         //deliver the order
                         List<int> deliveredProduct = new List<int>();
 

@@ -16,6 +16,11 @@ namespace CookingStar
         public float askingSideRequestChance = 0.4f;
         public float sideReqWithNoMainOrderChance = 0.2f;
 
+        //버튼 및 글자 비활성화 용도입니다.
+        public GameObject recordButton; // Record 버튼
+        public GameObject[] uiTextElements; // Text1 ~ Text12 UI 요소 배열
+        //버튼 및 글자 비활성화 용도입니다.
+
         [Space(20)]
         public GameObject positionDummy;
 
@@ -732,6 +737,47 @@ namespace CookingStar
         /// Leave routine with get/set ers and animations.
         /// </summary>
         /// <returns></returns>
+        // public IEnumerator leave()
+        // {
+        //     // prevent double animation
+        //     if (isLeaving)
+        //         yield break;
+        //     isLeaving = true;
+
+        //     // Change the tag of this customer, so it can't receive new deliveries
+        //     gameObject.tag = "Untagged";
+
+        //     // Animate patience bar
+        //     StartCoroutine(animate(Time.time, patienceBarMain, 0.7f, 0.8f));
+        //     yield return new WaitForSeconds(0.3f);
+
+        //     // Animate request bubble
+        //     StartCoroutine(animate(Time.time, requestBubble, 0.75f, 0.95f));
+        //     yield return new WaitForSeconds(0.4f);
+
+        //     // Move customer out of the scene
+        //     while (transform.position.x < 10)
+        //     {
+        //         transform.position = new Vector3(transform.position.x + (Time.deltaTime * customerMoveSpeed),
+        //                                         startingPosition.y + clientOffsetY + (Mathf.Sin(Time.time * 10) / ySineDivision),
+        //                                         transform.position.z);
+
+        //         if (transform.position.x >= 6)
+        //         {
+        //             // Notify MainGameController that this customer is leaving
+        //             MainGameController mainController = FindObjectOfType<MainGameController>();
+        //             if (mainController != null)
+        //             {
+        //                 mainController.OnCustomerLeave();
+        //             }
+
+        //             gameController.GetComponent<MainGameController>().availableSeatForCustomers[mySeat] = true;
+        //             Destroy(gameObject); // Remove customer from the game
+        //             yield break;
+        //         }
+        //         yield return 0;
+        //     }
+        // }
         public IEnumerator leave()
         {
             // prevent double animation
@@ -741,6 +787,9 @@ namespace CookingStar
 
             // Change the tag of this customer, so it can't receive new deliveries
             gameObject.tag = "Untagged";
+
+            // 비활성화된 UI 처리 (손님이 나가는 동안)
+            SetUIVisibility(false);
 
             // Animate patience bar
             StartCoroutine(animate(Time.time, patienceBarMain, 0.7f, 0.8f));
@@ -766,13 +815,39 @@ namespace CookingStar
                         mainController.OnCustomerLeave();
                     }
 
+                    // 자리 비활성화 처리
                     gameController.GetComponent<MainGameController>().availableSeatForCustomers[mySeat] = true;
                     Destroy(gameObject); // Remove customer from the game
+
+                    // 손님이 완전히 나갔을 때 UI 다시 활성화
+                    SetUIVisibility(true);
+
                     yield break;
                 }
                 yield return 0;
             }
         }
+
+
+        private void SetUIVisibility(bool isVisible) //나갈때 ui 비활성화하는 용도
+        {
+            if (recordButton != null)
+            {
+                recordButton.SetActive(isVisible); // Record 버튼 활성화/비활성화
+            }
+
+            if (uiTextElements != null && uiTextElements.Length > 0)
+            {
+                foreach (var element in uiTextElements)
+                {
+                    if (element != null)
+                    {
+                        element.SetActive(isVisible); // Text UI 활성화/비활성화
+                    }
+                }
+            }
+        }
+
 
 
 
