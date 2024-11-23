@@ -10,8 +10,9 @@ public class recordaudio : MonoBehaviour
     private const string ApiKey = "AIzaSyBZZzymFa8u1VAAbUbOgqvVTwIYlckhc34"; // Google Cloud API Å°
     private const string Url = "https://speech.googleapis.com/v1/speech:recognize?key=" + ApiKey;
     public IngredientsController ingredientsController;
-    private AudioClip audioClip; // ³ìÀ½µÈ ¿Àµğ¿À µ¥ÀÌÅÍ
+    private AudioClip audioClip; //                    
     private string Device;
+    private bool isRecording = false;
 
     void Start()
     {
@@ -24,48 +25,78 @@ public class recordaudio : MonoBehaviour
     }
 
 
-    // ¹öÆ° Å¬¸¯ ½Ã È£ÃâµÇ´Â ÇÔ¼ö (OnClick ¿¬°á)
+    //   Æ° Å¬      È£  Ç´   Ô¼  (OnClick     )
     public void StartRecordingAndSendToAPI()
     {
-        StartCoroutine(RecordAndSendToGoogle());
-    }
-
-    private IEnumerator RecordAndSendToGoogle()
-    {
-        Debug.Log("Recording started...");
-        audioClip = Microphone.Start(Device, false, 10, 16000); // ÃÖ´ë 5ÃÊ ³ìÀ½, 16kHz »ùÇÃ¸µ
-
-        // ³ìÀ½ÀÌ ¿Ï·áµÉ ¶§±îÁö ´ë±â
-        while (Microphone.IsRecording(Device))
+        // StartCoroutine(RecordAndSendToGoogle());
+        if (isRecording)
         {
-            yield return null; // ÇÑ ÇÁ·¹ÀÓ ´ë±â
+            Debug.LogWarning("Already recording!");
+            return;
         }
 
-        Debug.Log(audioClip);
+        Debug.Log("Recording started...");
+        audioClip = Microphone.Start(Device, false, 10, 16000); // ìµœëŒ€ 10ì´ˆ ë…¹ìŒ ê°€ëŠ¥
+        isRecording = true;
+    }
+
+    public void StopRecording()
+    {
+        if (!isRecording)
+        {
+            Debug.LogWarning("No active recording to stop!");
+            return;
+        }
 
         Debug.Log("Recording stopped.");
         Microphone.End(Device);
+        isRecording = false;
 
-        // ³ìÀ½µÈ µ¥ÀÌÅÍ µğ¹ö±ë
-        if (audioClip == null)
+        // Record ì™„ë£Œ í›„ ë°ì´í„°ë¥¼ ì²˜ë¦¬
+        if (audioClip != null)
+        {
+            StartCoroutine(RecordAndSendToGoogle());
+        }
+        else
         {
             Debug.LogError("AudioClip is null! Recording failed.");
-            yield break;
         }
-
-        // ¿Àµğ¿À µ¥ÀÌÅÍ¸¦ °¡Á®¿À±â
-        float[] samples = new float[audioClip.samples * audioClip.channels];
-        audioClip.GetData(samples, 0);
-
-        // ¿Àµğ¿À µ¥ÀÌÅÍ¸¦ PCM Çü½ÄÀÇ byte[]·Î º¯È¯
-        byte[] audioData = ConvertAudioClipToPCM(audioClip);
-
-        Debug.Log(BitConverter.ToString(audioData));
-        // Google Speech-to-Text API¿¡ Àü¼Û
-        yield return SendAudioToGoogle(audioData);
     }
 
-    // ¿Àµğ¿À µ¥ÀÌÅÍ¸¦ PCM Çü½ÄÀ¸·Î º¯È¯
+    public IEnumerator RecordAndSendToGoogle()
+    {
+        // Debug.Log("Recording started...");
+        // audioClip = Microphone.Start(Device, false, 10, 16000); //  Ö´  5       , 16kHz    Ã¸ 
+
+        //         Ï·             
+        
+        // while (Microphone.IsRecording(Device))
+        // {
+        //     yield return null; //              
+        // }
+
+        // if (!isRecording)
+        // {
+        //     Debug.LogWarning("No active recording to stop!");        
+        //     return;
+        // }
+
+        
+            float[] samples = new float[audioClip.samples * audioClip.channels];
+            audioClip.GetData(samples, 0);
+
+            //            Í¸  PCM        byte[]     È¯
+            byte[] audioData = ConvertAudioClipToPCM(audioClip);
+
+            Debug.Log(BitConverter.ToString(audioData));
+            // Google Speech-to-Text API       
+            yield return SendAudioToGoogle(audioData);
+        
+
+        //            Í¸          
+    }
+
+    //            Í¸  PCM            È¯
     private byte[] ConvertAudioClipToPCM(AudioClip clip)
     {
         float[] samples = new float[clip.samples];
@@ -84,51 +115,51 @@ public class recordaudio : MonoBehaviour
         return pcmData;
     }
 
-    // Google Speech-to-Text API·Î ¿Àµğ¿À µ¥ÀÌÅÍ Àü¼Û
+    // Google Speech-to-Text API                    
     private IEnumerator SendAudioToGoogle(byte[] audioData)
     {
         Debug.Log("Sending audio to Google API...");
 
-        // ¿Àµğ¿À µ¥ÀÌÅÍ¸¦ Base64·Î ÀÎÄÚµù
+        //            Í¸  Base64      Úµ 
         string base64Audio = System.Convert.ToBase64String(audioData);
-        //Debug.Log("Base64 Audio Length: " + base64Audio.Length); // ±æÀÌ¸¦ È®ÀÎ
-        //Debug.Log("Base64 Audio (Partial): " + base64Audio.Substring(0, 100) + "..."); // ÀÏºÎ Ãâ·Â
+        //Debug.Log("Base64 Audio Length: " + base64Audio.Length); //    Ì¸  È®  
+        //Debug.Log("Base64 Audio (Partial): " + base64Audio.Substring(0, 100) + "..."); //  Ïº     
 
 
 
-        // JSON ¿äÃ» µ¥ÀÌÅÍ »ı¼º (¼öµ¿À¸·Î ÀÛ¼º)
+        // JSON   Ã»             (          Û¼ )
         string json = $@"
-    {{
-      ""config"": {{
-        ""encoding"": ""LINEAR16"",
-        ""sampleRateHertz"": 16000,
-        ""languageCode"": ""ko-KR""
-      }},
-      ""audio"": {{
-        ""content"": ""{base64Audio}""
-      }}
-    }}";
+        {{
+        ""config"": {{
+            ""encoding"": ""LINEAR16"",
+            ""sampleRateHertz"": 16000,
+            ""languageCode"": ""ko-KR""
+        }},
+        ""audio"": {{
+            ""content"": ""{base64Audio}""
+        }}
+        }}";
 
-        // JSON Á÷·ÄÈ­
+        // JSON     È­
         //string json = JsonUtility.ToJson(requestBody);
         byte[] jsonBytes = Encoding.UTF8.GetBytes(json);
 
-        // UnityWebRequest·Î POST ¿äÃ» »ı¼º
+        // UnityWebRequest   POST   Ã»     
         UnityWebRequest request = new UnityWebRequest(Url, "POST");
         request.uploadHandler = new UploadHandlerRaw(jsonBytes);
         request.downloadHandler = new DownloadHandlerBuffer();
         request.SetRequestHeader("Content-Type", "application/json");
 
-        // ¿äÃ» º¸³»±â
+        //   Ã»       
         yield return request.SendWebRequest();
 
-        // °á°ú Ã³¸®
+        //     Ã³  
         if (request.result == UnityWebRequest.Result.Success)
         {
             Debug.Log("Response: " + request.downloadHandler.text);
             try
             {
-                // µğ¹ö±ë ·Î±× Ãß°¡
+                //        Î±   ß° 
                 Debug.Log("Calling ProcessGoogleResponse...");
                 ProcessGoogleResponse(request.downloadHandler.text);
             }
@@ -148,10 +179,10 @@ public class recordaudio : MonoBehaviour
     {
         Debug.Log("Processing Google Response...");
 
-        // JSON ÀÀ´ä¿¡¼­ º¯È¯µÈ ÅØ½ºÆ®¸¦ ÃßÃâ
+        // JSON    ä¿¡     È¯    Ø½ Æ®       
         try
         {
-            // Simple JSON »ç¿ë (¶Ç´Â JSON ±¸Á¶ Á÷Á¢ ºĞ¼®)
+            // Simple JSON     ( Ç´  JSON            Ğ¼ )
             var response = JsonUtility.FromJson<GoogleSpeechResponse>(jsonResponse);
 
             if (response != null && response.results != null && response.results.Length > 0)
@@ -159,7 +190,7 @@ public class recordaudio : MonoBehaviour
                 string recognizedWord = response.results[0].alternatives[0].transcript.Trim();
                 Debug.Log($"Recognized Word: {recognizedWord}");
 
-                // IngredientsController¿¡ ´Ü¾î Àü´Ş
+                // IngredientsController    Ü¾      
                 if (ingredientsController != null)
                 {
                     Debug.Log("Calling IngredientsController.SelectIngredientByWord...");
@@ -202,3 +233,209 @@ public class recordaudio : MonoBehaviour
     }
 
 }
+
+
+// using System.Collections;
+// using System.Text;
+// using UnityEngine;
+// using UnityEngine.Networking;
+// using System;
+// using CookingStar;
+
+// public class recordaudio : MonoBehaviour
+// {
+//     private const string ApiKey = "AIzaSyBZZzymFa8u1VAAbUbOgqvVTwIYlckhc34"; // Google Cloud API Å°
+//     private const string Url = "https://speech.googleapis.com/v1/speech:recognize?key=" + ApiKey;
+//     public IngredientsController ingredientsController;
+//     private AudioClip audioClip; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+//     private string Device;
+
+//     void Start()
+//     {
+//         foreach (var device in Microphone.devices)
+//         {
+//             Debug.Log("Available Microphone: " + device);
+//             Device = device;
+
+//         }
+//     }
+
+
+//     // ï¿½ï¿½Æ° Å¬ï¿½ï¿½ ï¿½ï¿½ È£ï¿½ï¿½Ç´ï¿½ ï¿½Ô¼ï¿½ (OnClick ï¿½ï¿½ï¿½ï¿½)
+//     public void StartRecordingAndSendToAPI()
+//     {
+//         StartCoroutine(RecordAndSendToGoogle());
+//     }
+
+//     private IEnumerator RecordAndSendToGoogle()
+//     {
+//         Debug.Log("Recording started...");
+//         audioClip = Microphone.Start(Device, false, 10, 16000); // ï¿½Ö´ï¿½ 5ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½, 16kHz ï¿½ï¿½ï¿½Ã¸ï¿½
+
+//         // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ï·ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
+//         while (Microphone.IsRecording(Device))
+//         {
+//             yield return null; // ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
+//         }
+
+//         Debug.Log(audioClip);
+
+//         Debug.Log("Recording stopped.");
+//         Microphone.End(Device);
+
+//         // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½
+//         if (audioClip == null)
+//         {
+//             Debug.LogError("AudioClip is null! Recording failed.");
+//             yield break;
+//         }
+
+//         // ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+//         float[] samples = new float[audioClip.samples * audioClip.channels];
+//         audioClip.GetData(samples, 0);
+
+//         // ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Í¸ï¿½ PCM ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ byte[]ï¿½ï¿½ ï¿½ï¿½È¯
+//         byte[] audioData = ConvertAudioClipToPCM(audioClip);
+
+//         Debug.Log(BitConverter.ToString(audioData));
+//         // Google Speech-to-Text APIï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+//         yield return SendAudioToGoogle(audioData);
+//     }
+
+//     // ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Í¸ï¿½ PCM ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯
+//     private byte[] ConvertAudioClipToPCM(AudioClip clip)
+//     {
+//         float[] samples = new float[clip.samples];
+//         clip.GetData(samples, 0);
+
+//         byte[] pcmData = new byte[samples.Length * 2];
+//         int index = 0;
+
+//         foreach (float sample in samples)
+//         {
+//             short pcmSample = (short)(sample * 32767);
+//             pcmData[index++] = (byte)(pcmSample & 0xff);
+//             pcmData[index++] = (byte)((pcmSample >> 8) & 0xff);
+//         }
+
+//         return pcmData;
+//     }
+
+//     // Google Speech-to-Text APIï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+//     private IEnumerator SendAudioToGoogle(byte[] audioData)
+//     {
+//         Debug.Log("Sending audio to Google API...");
+
+//         // ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Í¸ï¿½ Base64ï¿½ï¿½ ï¿½ï¿½ï¿½Úµï¿½
+//         string base64Audio = System.Convert.ToBase64String(audioData);
+//         //Debug.Log("Base64 Audio Length: " + base64Audio.Length); // ï¿½ï¿½ï¿½Ì¸ï¿½ È®ï¿½ï¿½
+//         //Debug.Log("Base64 Audio (Partial): " + base64Audio.Substring(0, 100) + "..."); // ï¿½Ïºï¿½ ï¿½ï¿½ï¿½
+
+
+
+//         // JSON ï¿½ï¿½Ã» ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Û¼ï¿½)
+//         string json = $@"
+//     {{
+//       ""config"": {{
+//         ""encoding"": ""LINEAR16"",
+//         ""sampleRateHertz"": 16000,
+//         ""languageCode"": ""ko-KR""
+//       }},
+//       ""audio"": {{
+//         ""content"": ""{base64Audio}""
+//       }}
+//     }}";
+
+//         // JSON ï¿½ï¿½ï¿½ï¿½È­
+//         //string json = JsonUtility.ToJson(requestBody);
+//         byte[] jsonBytes = Encoding.UTF8.GetBytes(json);
+
+//         // UnityWebRequestï¿½ï¿½ POST ï¿½ï¿½Ã» ï¿½ï¿½ï¿½ï¿½
+//         UnityWebRequest request = new UnityWebRequest(Url, "POST");
+//         request.uploadHandler = new UploadHandlerRaw(jsonBytes);
+//         request.downloadHandler = new DownloadHandlerBuffer();
+//         request.SetRequestHeader("Content-Type", "application/json");
+
+//         // ï¿½ï¿½Ã» ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+//         yield return request.SendWebRequest();
+
+//         // ï¿½ï¿½ï¿½ Ã³ï¿½ï¿½
+//         if (request.result == UnityWebRequest.Result.Success)
+//         {
+//             Debug.Log("Response: " + request.downloadHandler.text);
+//             try
+//             {
+//                 // ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Î±ï¿½ ï¿½ß°ï¿½
+//                 Debug.Log("Calling ProcessGoogleResponse...");
+//                 ProcessGoogleResponse(request.downloadHandler.text);
+//             }
+//             catch (Exception ex)
+//             {
+//                 Debug.LogError($"Error in ProcessGoogleResponse: {ex.Message}");
+//             }
+//         }
+//         else
+//         {
+//             Debug.Log("Error: " + request.error);
+//             Debug.LogError("Response: " + request.downloadHandler.text);
+//         }
+//     }
+
+//     private void ProcessGoogleResponse(string jsonResponse)
+//     {
+//         Debug.Log("Processing Google Response...");
+
+//         // JSON ï¿½ï¿½ï¿½ä¿¡ï¿½ï¿½ ï¿½ï¿½È¯ï¿½ï¿½ ï¿½Ø½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+//         try
+//         {
+//             // Simple JSON ï¿½ï¿½ï¿½ (ï¿½Ç´ï¿½ JSON ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ğ¼ï¿½)
+//             var response = JsonUtility.FromJson<GoogleSpeechResponse>(jsonResponse);
+
+//             if (response != null && response.results != null && response.results.Length > 0)
+//             {
+//                 string recognizedWord = response.results[0].alternatives[0].transcript.Trim();
+//                 Debug.Log($"Recognized Word: {recognizedWord}");
+
+//                 // IngredientsControllerï¿½ï¿½ ï¿½Ü¾ï¿½ ï¿½ï¿½ï¿½ï¿½
+//                 if (ingredientsController != null)
+//                 {
+//                     Debug.Log("Calling IngredientsController.SelectIngredientByWord...");
+//                     ingredientsController.SelectIngredientByWord(recognizedWord);
+//                 }
+//                 else
+//                 {
+//                     Debug.LogError("IngredientsController is not assigned in recordaudio!");
+//                 }
+//             }
+//             else
+//             {
+//                 Debug.LogError("No transcription found in Google API response.");
+//             }
+//         }
+//         catch (Exception ex)
+//         {
+//             Debug.LogError($"Error processing Google Response: {ex.Message}");
+//             Debug.LogError($"Raw Response: {jsonResponse}");
+//         }
+
+//     }
+
+//     [System.Serializable]
+//     public class GoogleSpeechResponse
+//     {
+//         public Result[] results;
+//     }
+
+//     [System.Serializable]
+//     public class Result
+//     {
+//         public Alternative[] alternatives;
+//     }
+
+//     [System.Serializable]
+//     public class Alternative
+//     {
+//         public string transcript;
+//     }
+
+// }
