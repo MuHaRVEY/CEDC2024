@@ -1,178 +1,162 @@
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 namespace CookingStar
 {
-	public class IngredientsController : MonoBehaviour
-	{
-
-
-		//테스트용 stt
-//  private GoogleSpeechController googleSpeechController;
-
-    // void Start()
-    // {
-    //     // Google Speech Controller 초기화
-    //     googleSpeechController = GetComponent<GoogleSpeechController>();
-    // }
-
-	// 마이크 테스트 해보던 코드
-    // void Update()
-    // {
-    //     if (Input.GetKeyDown(KeyCode.Space)) // 스페이스바로 테스트
-    //     {
-    //         googleSpeechController.StartRecognition(); 
-    //     }
-	// 	// 기존 재료 관리 로직
-    // 	ManagePlayerDrag();
-	// 	if (Input.touches.Length < 1 && !Input.GetMouseButton(0)) //원래 있던 코드 여기로 옮김
-	// 	{
-	// 		itemIsInHand = false;
-	// 	}
-    // }
-
-    public void HandleRecognizedText(string text)
+    public class IngredientsController : MonoBehaviour
     {
-        if (text.Contains("lettuce"))
+
+
+        //테스트용 stt
+        //  private GoogleSpeechController googleSpeechController;
+
+        // void Start()
+        // {
+        //     // Google Speech Controller 초기화
+        //     googleSpeechController = GetComponent<GoogleSpeechController>();
+        // }
+
+        // 마이크 테스트 해보던 코드
+        // void Update()
+        // {
+        //     if (Input.GetKeyDown(KeyCode.Space)) // 스페이스바로 테스트
+        //     {
+        //         googleSpeechController.StartRecognition(); 
+        //     }
+        // 	// 기존 재료 관리 로직
+        // 	ManagePlayerDrag();
+        // 	if (Input.touches.Length < 1 && !Input.GetMouseButton(0)) //원래 있던 코드 여기로 옮김
+        // 	{
+        // 		itemIsInHand = false;
+        // 	}
+        // }
+
+        public void HandleRecognizedText(string text)
         {
-            Debug.Log("Adding lettuce!");
-            // 재료 추가 로직
+            if (text.Contains("lettuce"))
+            {
+                Debug.Log("Adding lettuce!");
+                // 재료 추가 로직
+            }
+            else if (text.Contains("tomato"))
+            {
+                Debug.Log("Adding tomato!");
+                // 재료 추가 로직
+            }
         }
-        else if (text.Contains("tomato"))
+        // 테스트용 stt fin
+        /// <summary>
+        /// Main class for Handling all things related to ingredients
+        /// </summary>
+
+        //public list of all available ingredients.
+        public GameObject[] ingredientsArray; // 모든 재료 배열
+        public Dictionary<string, string> ingredientWords = new Dictionary<string, string>(); // 재료와 단어 매칭
+        public static bool itemIsInHand; // 재료가 선택되었는지 여부
+        public BuController buController; // UIController 참조
+        public GameObject serverPlate; // 서버 접시 (serverPlate-1)
+        public float stackingOffset = 0.1f; // 재료가 쌓이는 간격 (Y축 간격)
+        private int stackCount = 1; // 현재 접시에 쌓인 재료의 개수
+
+        void Start()
         {
-            Debug.Log("Adding tomato!");
-            // 재료 추가 로직
+            Debug.Log("IngredientsController Start executed!");
+            itemIsInHand = false; // 초기 상태
+
+            if (buController != null)
+            {
+                buController.ShowRecordButton();
+                Debug.Log("ShowRecordButton() successfully called.");
+            }
+            else
+            {
+               Debug.LogError("BuController is not assigned in IngredientsController!");
+            }
+
+            // 명시적으로 재료와 특정 단어 매핑
+            ingredientWords.Add("Ingredient-Type-01", "안녕하세요");
+            ingredientWords.Add("Ingredient-Type-02", "고기");
+            ingredientWords.Add("Ingredient-Type-03", "오이");
+            ingredientWords.Add("Ingredient-Type-04", "토마토");
+            ingredientWords.Add("Ingredient-Type-05", "치즈");
+            ingredientWords.Add("Ingredient-Type-06", "햄");
+            ingredientWords.Add("Ingredient-Type-07", "케찹");
+            ingredientWords.Add("Ingredient-Type-08", "계란");
+            ingredientWords.Add("Ingredient-Type-09", "양파");
+            ingredientWords.Add("Ingredient-Type-10", "빵빵");
+            ingredientWords.Add("Ingredient-Type-11", "상추");
+            ingredientWords.Add("Ingredient-Type-12", "머스타드");
+            ingredientWords.Add("Ingredient-Type-13", "피클");
+            ingredientWords.Add("Ingredient-Type-14", "muya");
+            ingredientWords.Add("Ingredient-Type-15", "gamja");
+        }
+
+        public void SelectIngredientByWord(string recognizedWord)
+        {
+            Debug.Log($"SelectIngredientByWord called with word: {recognizedWord}");
+            foreach (var entry in ingredientWords)
+            {
+                recognizedWord = recognizedWord.Trim().ToLower();
+
+                if (recognizedWord.Equals(entry.Value)) // 변환된 단어와 사전의 Value를 비교
+                {
+                    Debug.Log($"Matched ingredient: {entry.Value}");
+                    SelectIngredient(entry.Key); // 매칭된 Key로 재료 선택
+                    break;
+                }
+            }
+            Debug.LogError($"No matching ingredient for recognized word: {recognizedWord}");
+        }
+
+        void SelectIngredient(string ingredientName)
+        {
+            if (serverPlate == null)
+            {
+                Debug.LogError("ServerPlate is null. Make sure it is assigned in the Inspector!");
+                return;
+            }
+
+            foreach (var ingredient in ingredientsArray)
+            {
+                if (ingredient.name.Equals(ingredientName))
+                {
+                    Debug.Log($"Matched ingredient: {ingredient.name}");
+
+                    // 재료 인스턴스 생성
+                    GameObject newIngredient = Instantiate(ingredient);
+
+                    if (newIngredient == null)
+                    {
+                        Debug.LogError("Failed to instantiate ingredient!");
+                        return;
+                    }
+
+                    // 재료의 기본 Transform 설정
+                    newIngredient.name = ingredient.name;
+                    newIngredient.tag = "deliveryQueueItem";
+
+                    // 재료의 위치를 serverPlate를 기준으로 설정
+                    newIngredient.transform.position = serverPlate.transform.position + new Vector3(
+                        0, // X축: 접시 중심
+                        stackCount * stackingOffset, // Y축: 쌓이는 간격
+                        0  // Z축: 접시 중심
+                    );
+
+                    // 재료의 회전 설정 (원래 코드와 동일)
+                    newIngredient.transform.rotation = Quaternion.Euler(90, 180, 0);
+
+                    // 재료의 크기 설정 (원래 코드와 동일)
+                    newIngredient.transform.localScale = new Vector3(0.085f, 0.01f, 0.05f);
+
+                    Debug.Log($"Ingredient {newIngredient.name} added to serverPlate at position: {newIngredient.transform.position}");
+
+                    // 스택 카운트 증가
+                    stackCount++;
+                    return;
+                }
+            }
+            Debug.LogError($"Ingredient with name {ingredientName} not found in ingredientsArray!");
         }
     }
-		// 테스트용 stt fin
-		/// <summary>
-		/// Main class for Handling all things related to ingredients
-		/// </summary>
-
-		//public list of all available ingredients.
-		public GameObject[] ingredientsArray;
-		//Public ID of this ingredient. (used to build up the delivery queue based on customers orders)
-		public int factoryID;
-		public bool needsProcess = false;       //items that needs process, should first be moved to a machine
-												//to become ready to serve. normal items can be served directly and
-												//do not need to be processed.
-		public string processorTag = "";        //actual tag of the processor machine.
-												//only required if this ingredient needs to be processed.
-
-		private float delayTime;                //after this delay, we let player to be able to choose another ingredient again
-		private bool canCreate = true;          //cutome flag to prevent double picking
-		public static bool itemIsInHand;        //do we already picked something? we can only pick and drag one ingredient eachtime.
-												//Important. We also use this static flag to prevent picking the deliveryPlate, when we are
-												//dragging some ingredients into it.
-		public float Zoffset = -1f;             //ingredient will keep a certain (offset) distance from mouse/finger when being dragged.
-
-
-		void Awake()
-		{
-			delayTime = 0.25f; //Default = 1f
-			itemIsInHand = false;
-		}
-
-		//update 함수 원본 드래그로 가져오기?
-
-		void Update()
-		{
-			ManagePlayerDrag();
-
-			if (Input.touches.Length < 1 && !Input.GetMouseButton(0))
-			{
-				itemIsInHand = false;
-			}
-
-			//debug
-			//print ("itemIsInHand: " + itemIsInHand);
-		}
-
-
-		/// <summary>
-		/// If player has dragged on of the ingredients, make an instance of it, then
-		// follow players touch/mouse position.
-		/// </summary>
-		private RaycastHit hitInfo;
-		private Ray ray;
-		void ManagePlayerDrag() 
-		{
-			//Mouse of touch?
-			if (Input.touches.Length > 0 && Input.touches[0].phase == TouchPhase.Moved)
-				ray = Camera.main.ScreenPointToRay(Input.touches[0].position);
-			else if (Input.GetMouseButtonDown(0))
-				ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-			else
-				return;
-
-			if (Physics.Raycast(ray, out hitInfo))
-			{
-				GameObject objectHit = hitInfo.transform.gameObject;
-				if (objectHit.tag == "ingredient" && objectHit.name == gameObject.name && !itemIsInHand)
-				{
-
-					if (!needsProcess)
-						CreateIngredient();
-					else
-						CreateRawIngredient();  //raw ingredient needs to be processed (in a machine) before use
-				}
-			}
-		}
-
-
-		/// <summary>
-		/// Create an instance of this ingredient and make it a child of deliveryPlate.
-		/// </summary>
-		void CreateIngredient()
-		{
-			if (canCreate && !MainGameController.gameIsFinished && MainGameController.gameIsStarted && !MainGameController.deliveryQueueIsFull)
-			{
-				canCreate = false;
-				itemIsInHand = true;
-				GameObject prod = Instantiate(ingredientsArray[factoryID - 1], transform.position + new Vector3(0, 0, Zoffset), Quaternion.Euler(90, 180, 0)) as GameObject;
-				prod.name = ingredientsArray[factoryID - 1].name;
-				prod.tag = "deliveryQueueItem";
-				prod.GetComponent<MeshCollider>().enabled = false;
-				prod.GetComponent<ProductMover>().factoryID = factoryID;
-				prod.GetComponent<ProductMover>().needsProcess = false;
-				prod.transform.localScale = new Vector3(0.085f, 0.01f, 0.05f); //hardcoded scale value. change with caution!
-				SfxPlayer.instance.PlaySfx(5);
-				StartCoroutine(Reactivate());
-			}
-		}
-
-
-		/// <summary>
-		/// Create an instance of this ingredient and make it a child of deliveryPlate.
-		/// </summary>
-		void CreateRawIngredient()
-		{
-			if (canCreate && !MainGameController.gameIsFinished && MainGameController.gameIsStarted)
-			{
-				canCreate = false;
-				itemIsInHand = true;
-				GameObject prod = Instantiate(ingredientsArray[factoryID - 1], transform.position + new Vector3(0, 0, Zoffset), Quaternion.Euler(90, 180, 0)) as GameObject;
-				prod.name = ingredientsArray[factoryID - 1].name + "-RAW";
-				prod.tag = "rawIngredient";
-				prod.GetComponent<ProductMover>().factoryID = factoryID;
-				prod.GetComponent<ProductMover>().needsProcess = true;
-				prod.GetComponent<ProductMover>().processorTag = processorTag;
-				prod.transform.localScale = new Vector3(0.085f, 0.01f, 0.06f);
-				SfxPlayer.instance.PlaySfx(5);
-				StartCoroutine(Reactivate());
-			}
-		}
-
-
-		/// <summary>
-		/// Make this ingredient draggable again
-		/// </summary>
-		/// <returns></returns>
-		IEnumerator Reactivate()
-		{
-			yield return new WaitForSeconds(delayTime);
-			canCreate = true;
-		}
-
-	}
 }
