@@ -48,82 +48,105 @@ public class BurgerPacking : MonoBehaviour
 
 
     void Start()
+{
+    // Serial port initialization
+    serialPort = new SerialPort(portName, baudRate);
+    try
     {
-        // Serial port initialization
-        serialPort = new SerialPort(portName, baudRate);
-        try
-        {
-            serialPort.Open();
-            Debug.Log("Serial Port Opened: " + portName);
-        }
-        catch (System.Exception e)
-        {
-            Debug.LogError("Failed to open serial port: " + e.Message);
-        }
-        // 게임 오버 창 비활성화
-        if (gameOverPanel != null)
-        {
-            gameOverPanel.SetActive(false);
-        }
-        // Graph scaling
-        ScaleGraphToBackground();
-
-        // Graph initialization
-        lineRenderer.positionCount = 0;
-        DrawThreshold();
-
-        // UI initialization
-        if (successMessage != null) successMessage.SetActive(false);
-        if (failMessage != null) failMessage.SetActive(false);
+        serialPort.Open();
+        Debug.Log("Serial Port Opened: " + portName);
+    }
+    catch (System.Exception e)
+    {
+        Debug.LogError("Failed to open serial port: " + e.Message);
+        serialPort = null; // 포트를 null로 설정
     }
 
-    void Update()
+    // 게임 오버 창 비활성화
+    if (gameOverPanel != null)
     {
-        if (isPackingActive)
-        {
-            packingTimer -= Time.deltaTime;
-            elapsedTime += Time.deltaTime;
+        gameOverPanel.SetActive(false);
+    }
 
-            if (packingTimer <= 0)
-            {
-                FinalizePacking(false); // Packing failed
-            }
-            else
-            {
-                ReadEMGData();
-                UpdateGraph();
-            }
+    // Graph scaling
+    ScaleGraphToBackground();
+
+    // Graph initialization
+    lineRenderer.positionCount = 0;
+    DrawThreshold();
+
+    // UI initialization
+    if (successMessage != null) successMessage.SetActive(false);
+    if (failMessage != null) failMessage.SetActive(false);
+}
+
+void Update()
+{
+    if (!IsSensorConnected())
+    {
+        Debug.LogWarning("Sensor is not connected. Packing cannot start.");
+        return; // 센서가 연결되지 않았으면 Update를 중단
+    }
+
+    if (isPackingActive)
+    {
+        packingTimer -= Time.deltaTime;
+        elapsedTime += Time.deltaTime;
+
+        if (packingTimer <= 0)
+        {
+            FinalizePacking(false); // Packing failed
         }
-
-        // Start packing when spacebar is pressed
-        if (Input.GetKeyDown(KeyCode.Space) && !isMoving && !hasArrived)
+        else
         {
-            StartPacking();
-            Debug.Log("Packing started.");
-            // isMoving = true;
-        }
-        if (isMoving)
-        {
-            burgerForPacking.position = Vector3.Lerp(
-                burgerForPacking.position,
-                pack.position,
-                Time.deltaTime * moveSpeed
-            );
-
-            // 목표 위치에 도달하면 이동 멈추고 위치를 정확히 설정
-            if (Vector3.Distance(burgerForPacking.position, pack.position) < 0.1f)
-            {
-                isMoving = false;
-                hasArrived = true;
-                burgerForPacking.position = pack.position; // 정확히 포장지 위치로 설정
-                burgerForPacking.localScale = Vector3.zero; // 크기를 0으로 설정 (사라지듯 연출)
-                Debug.Log("Burger reached the pack!");
-
-                // 게임 오버 창 활성화
-                
-            }
+            ReadEMGData();
+            UpdateGraph();
         }
     }
+
+    // Start packing when spacebar is pressed
+    if (Input.GetKeyDown(KeyCode.Space) && !isMoving && !hasArrived)
+    {
+        StartPacking();
+        Debug.Log("Packing started.");
+    }
+
+    if (isMoving)
+    {
+        burgerForPacking.position = Vector3.Lerp(
+            burgerForPacking.position,
+            pack.position,
+            Time.deltaTime * moveSpeed
+        );
+
+        // 목표 위치에 도달하면 이동 멈추고 위치를 정확히 설정
+        if (Vector3.Distance(burgerForPacking.position, pack.position) < 0.1f)
+        {
+            isMoving = false;
+            hasArrived = true;
+            burgerForPacking.position = pack.position; // 정확히 포장지 위치로 설정
+            burgerForPacking.localScale = Vector3.zero; // 크기를 0으로 설정 (사라지듯 연출)
+            Debug.Log("Burger reached the pack!");
+
+            // 게임 오버 창 활성화
+            ShowGameOverPanel();
+        }
+    }
+}
+
+/// <summary>
+/// 센서 연결 여부 확인
+/// </summary>
+    private bool IsSensorConnected()
+    {
+        // serialPort가 null이거나 열려 있지 않으면 센서가 연결되지 않음
+        if (serialPort == null || !serialPort.IsOpen)
+        {
+            return false;
+        }
+        return true;
+    }
+
 
     private void StartPacking()
     {

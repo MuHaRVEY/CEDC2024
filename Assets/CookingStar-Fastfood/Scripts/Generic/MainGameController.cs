@@ -452,6 +452,35 @@ namespace CookingStar
 		//***************************************************************************//
 		IEnumerator processGameFinish()
 		{
+			if (gameoverPanelHolder == null)
+			{
+				Debug.LogError("gameoverPanelHolder is not assigned!");
+				yield break;
+			}
+
+			if (resultStarsUI == null)
+			{
+				Debug.LogError("resultStarsUI is not assigned!");
+				yield break;
+			}
+
+			if (resultHamburgersUI == null)
+			{
+				Debug.LogError("resultHamburgersUI is not assigned!");
+				yield break;
+			}
+
+			if (availableStarIcons == null || availableStarIcons.Length == 0)
+			{
+				Debug.LogError("availableStarIcons is not properly initialized!");
+				yield break;
+			}
+
+			if (availableHamburgerIcons == null || availableHamburgerIcons.Length == 0)
+			{
+				Debug.LogError("availableHamburgerIcons is not properly initialized!");
+				yield break;
+			}
 			SfxPlayer.instance.PlaySfx(6);
 
 			yield return new WaitForSeconds(1.5f);  //absolutely required.
@@ -463,8 +492,19 @@ namespace CookingStar
 			endPanelLabelUI.text = "Success!";
 			missionTargetUI.text = totalMoneyMade + " of " + requiredBalance;
 			missionTimeUI.text = (int)Time.timeSinceLevelLoad + " seconds";
-			resultStarsUI.sprite = availableStarIcons[5];
-			resultHamburgersUI.sprite = availableHamburgerIcons[4];
+			// resultStarsUI.sprite = availableStarIcons[5];
+			// resultHamburgersUI.sprite = availableHamburgerIcons[4];
+			int starsIndex = GetLevelStars();
+    		int hamburgersIndex = GetLevelHambugers();
+			if (starsIndex >= 0 && starsIndex < availableStarIcons.Length)
+				resultStarsUI.sprite = availableStarIcons[starsIndex];
+			else
+				Debug.LogWarning("Invalid stars index: " + starsIndex);
+
+			if (hamburgersIndex >= 0 && hamburgersIndex < availableHamburgerIcons.Length)
+				resultHamburgersUI.sprite = availableHamburgerIcons[hamburgersIndex];
+			else
+				Debug.LogWarning("Invalid hamburgers index: " + hamburgersIndex);
 			SfxPlayer.instance.PlaySfx(7);
 
 			// //tell all customers to leave, if they are still in the shop :)))
