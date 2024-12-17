@@ -61,6 +61,16 @@ sysinfo.txt
 *.unitypackage
 *.app
 
+# Firebase Asset 충돌 방지를 위해 뺌
+Assets/Firebase
+Assets/ExternalDependencyManager
+Assets/Editor Default Resources
+Assets/Editor Default Resources.meta
+Assets/ExternalDependencyManager.meta
+Assets/Firebase.meta
+Assets/Plugins
+
+
 # Crashlytics generated file
 crashlytics-build.properties
 
