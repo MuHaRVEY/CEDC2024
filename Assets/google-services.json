@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "381922382452",
+    "project_id": "hambugi-65e1d",
+    "storage_bucket": "hambugi-65e1d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:381922382452:android:5f28080665dbc3c8c1f721",
+        "android_client_info": {
+          "package_name": "com.team4.hambugi"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD8wfE_ObbPwq3LsxRh7F5JpyErMIk7rCo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
