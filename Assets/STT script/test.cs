@@ -29,11 +29,11 @@ public class test : MonoBehaviour
                 // Database 참조 초기화
                 m_Reference = FirebaseDatabase.DefaultInstance.RootReference;
 
-
-                WriteUserData("0", "aaaa");
-                WriteUserData("1", "bbbb");
-                //WriteUserData("2", "cccc");
-                //WriteUserData("3", "dddd");
+                for (int i = 4; i < 5; i++)
+                {
+                    WriteUserData(i, "aaaa");
+           
+                }
 
                 ReadUserData();
             }
@@ -52,7 +52,12 @@ public class test : MonoBehaviour
 
     void ReadUserData()
     {
+        /*
+         키를 기준으로 정렬하여 최신 노드부터 가져오게 함.
+         */
         FirebaseDatabase.DefaultInstance.GetReference("users")
+            .OrderByKey()
+            //.LimitToLast(5) // 마지막 5개 데이터만 가져오기
             .GetValueAsync().ContinueWithOnMainThread(task =>
             {
                 if (task.IsFaulted)
@@ -63,17 +68,27 @@ public class test : MonoBehaviour
                 else if (task.IsCompleted)
                 {
                     DataSnapshot snapshot = task.Result;
+                    List<string> userList = new List<string>();
+
                     // 데이터 출력
                     foreach (var childSnapshot in snapshot.Children)
                     {
-                        Debug.Log("Username:" + childSnapshot.Child("username").Value.ToString());
+                        string Id = childSnapshot.Key;
+                        string score = childSnapshot.Child("score").Value.ToString();
+                        userList.Add($"ID: {Id}, score: {score}, EMGsenser: , date: ");
                     }
 
+                    userList.Reverse(); // 역순으로 가져온 데이터를 Reverse
+
+                    foreach (var data in userList)
+                    {
+                        Debug.Log(data);
+                    }
                 }
             });
     }
 
-    void WriteUserData(string userId, string username)
+    void WriteUserData(int id, string score)
     {
 
         if (m_Reference == null)
@@ -82,7 +97,9 @@ public class test : MonoBehaviour
             return;
         }
 
-        m_Reference.Child("users").Child(userId).Child("username").SetValueAsync(username).ContinueWithOnMainThread(task =>
+        string idKey = id.ToString();
+
+        m_Reference.Child("users").Child(idKey).Child("score").SetValueAsync(score).ContinueWithOnMainThread(task =>
         {
             if (task.IsFaulted)
             {
@@ -90,7 +107,7 @@ public class test : MonoBehaviour
             }
             else if (task.IsCompleted)
             {
-                Debug.Log("Data written successfully : " + userId);
+                Debug.Log("Data written successfully : " + score);
             }
         });
 

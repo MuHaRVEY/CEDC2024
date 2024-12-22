@@ -7,25 +7,26 @@ using CookingStar;
 
 public class recordaudio : MonoBehaviour
 {
-    private const string ApiKey = "AIzaSyBZZzymFa8u1VAAbUbOgqvVTwIYlckhc34"; // Google Cloud API Ű
+    private const string ApiKey = "AIzaSyBZZzymFa8u1VAAbUbOgqvVTwIYlckhc34"; // Google Cloud API 키
     private const string Url = "https://speech.googleapis.com/v1/speech:recognize?key=" + ApiKey;
     public IngredientsController ingredientsController;
-    private AudioClip audioClip; //                    
-    private string Device;
+    private AudioClip audioClip; // 오디오 클립 객체               
+    private string Device;  // 사용 중인 마이크 장치 이름
     private bool isRecording = false;
 
     void Start()
     {
+        // 사용 가능한 마이크 장치 출력
         foreach (var device in Microphone.devices)
         {
             Debug.Log("Available Microphone: " + device);
-            Device = device;
+            Device = device; // 첫 번째 마이크 장치를 기본으로 설정
 
         }
     }
 
 
-    //   ư Ŭ      ȣ  Ǵ   Լ  (OnClick     )
+    // 녹음 시작 함수 (버튼 클릭 시 호출)
     public void StartRecordingAndSendToAPI()
     {
         // StartCoroutine(RecordAndSendToGoogle());
@@ -40,6 +41,7 @@ public class recordaudio : MonoBehaviour
         isRecording = true;
     }
 
+    // 녹음 중지 함수
     public void StopRecording()
     {
         if (!isRecording)
@@ -49,10 +51,10 @@ public class recordaudio : MonoBehaviour
         }
 
         Debug.Log("Recording stopped.");
-        Microphone.End(Device);
+        Microphone.End(Device); // 마이크 녹음 중지
         isRecording = false;
 
-        // Record 완료 후 데이터를 처리
+        // 녹음 완료 후 오디오 데이터 처리
         if (audioClip != null)
         {
             StartCoroutine(RecordAndSendToGoogle());
@@ -63,40 +65,22 @@ public class recordaudio : MonoBehaviour
         }
     }
 
+    // Google API로 오디오 데이터를 전송
     public IEnumerator RecordAndSendToGoogle()
     {
-        // Debug.Log("Recording started...");
-        // audioClip = Microphone.Start(Device, false, 10, 16000); //  ִ  5       , 16kHz    ø 
+        float[] samples = new float[audioClip.samples * audioClip.channels];
+        audioClip.GetData(samples, 0);
 
-        //         Ϸ             
-        
-        // while (Microphone.IsRecording(Device))
-        // {
-        //     yield return null; //              
-        // }
+        // 오디오 데이터를 PCM(byte[]) 형식으로 변환
+        byte[] audioData = ConvertAudioClipToPCM(audioClip);
 
-        // if (!isRecording)
-        // {
-        //     Debug.LogWarning("No active recording to stop!");        
-        //     return;
-        // }
+        Debug.Log(BitConverter.ToString(audioData));
 
-        
-            float[] samples = new float[audioClip.samples * audioClip.channels];
-            audioClip.GetData(samples, 0);
-
-            //            ͸  PCM        byte[]     ȯ
-            byte[] audioData = ConvertAudioClipToPCM(audioClip);
-
-            Debug.Log(BitConverter.ToString(audioData));
-            // Google Speech-to-Text API       
-            yield return SendAudioToGoogle(audioData);
-        
-
-        //            ͸          
+        // Google Speech-to-Text API 호출
+        yield return SendAudioToGoogle(audioData);
     }
 
-    //            ͸  PCM            ȯ
+    // AudioClip 데이터를 PCM 형식으로 변환
     private byte[] ConvertAudioClipToPCM(AudioClip clip)
     {
         float[] samples = new float[clip.samples];
@@ -115,19 +99,16 @@ public class recordaudio : MonoBehaviour
         return pcmData;
     }
 
-    // Google Speech-to-Text API                    
+    // Google Speech-to-Text API로 오디오 데이터 전송
     private IEnumerator SendAudioToGoogle(byte[] audioData)
     {
         Debug.Log("Sending audio to Google API...");
 
-        //            ͸  Base64      ڵ 
+        // 오디오 데이터를 Base64로 인코딩
         string base64Audio = System.Convert.ToBase64String(audioData);
-        //Debug.Log("Base64 Audio Length: " + base64Audio.Length); //    ̸  Ȯ  
-        //Debug.Log("Base64 Audio (Partial): " + base64Audio.Substring(0, 100) + "..."); //  Ϻ     
 
 
-
-        // JSON   û             (          ۼ )
+        // JSON 요청 데이터 생성
         string json = $@"
         {{
         ""config"": {{
@@ -140,27 +121,23 @@ public class recordaudio : MonoBehaviour
         }}
         }}";
 
-        // JSON     ȭ
-        //string json = JsonUtility.ToJson(requestBody);
         byte[] jsonBytes = Encoding.UTF8.GetBytes(json);
 
-        // UnityWebRequest   POST   û     
+        // UnityWebRequest를 사용하여 POST 요청    
         UnityWebRequest request = new UnityWebRequest(Url, "POST");
         request.uploadHandler = new UploadHandlerRaw(jsonBytes);
         request.downloadHandler = new DownloadHandlerBuffer();
         request.SetRequestHeader("Content-Type", "application/json");
 
-        //   û       
+        // 요청 전송    
         yield return request.SendWebRequest();
 
-        //     ó  
+        // 응답 처리
         if (request.result == UnityWebRequest.Result.Success)
         {
             Debug.Log("Response: " + request.downloadHandler.text);
             try
             {
-                //        α   ߰ 
-                Debug.Log("Calling ProcessGoogleResponse...");
                 ProcessGoogleResponse(request.downloadHandler.text);
             }
             catch (Exception ex)
@@ -175,14 +152,15 @@ public class recordaudio : MonoBehaviour
         }
     }
 
+    // Google API 응답 처리
     private void ProcessGoogleResponse(string jsonResponse)
     {
         Debug.Log("Processing Google Response...");
 
-        // JSON    信     ȯ    ؽ Ʈ       
+        // JSON 응답 파싱
         try
         {
-            // Simple JSON     ( Ǵ  JSON            м )
+            // IngredientsController에 결과 전달
             var response = JsonUtility.FromJson<GoogleSpeechResponse>(jsonResponse);
 
             if (response != null && response.results != null && response.results.Length > 0)
@@ -190,7 +168,7 @@ public class recordaudio : MonoBehaviour
                 string recognizedWord = response.results[0].alternatives[0].transcript.Trim();
                 Debug.Log($"Recognized Word: {recognizedWord}");
 
-                // IngredientsController    ܾ      
+                
                 if (ingredientsController != null)
                 {
                     Debug.Log("Calling IngredientsController.SelectIngredientByWord...");
