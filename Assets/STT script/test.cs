@@ -29,12 +29,7 @@ public class test : MonoBehaviour
                 // Database 참조 초기화
                 m_Reference = FirebaseDatabase.DefaultInstance.RootReference;
 
-                for (int i = 4; i < 5; i++)
-                {
-                    WriteUserData(i, "aaaa");
-           
-                }
-
+               
                 ReadUserData();
             }
             else
