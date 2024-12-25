@@ -8,6 +8,8 @@ namespace CookingStar
         public GameObject gameOverPanel; // GameOverPanel 오브젝트
         public Button recordButton; // Record 버튼
         public GameObject[] textObjects; // Text1~Text12까지의 텍스트 오브젝트 배열
+        public GameObject NoticeScore; // 점수 안내 텍스트
+        public ScoreManager ScoreManager;
 
         void Start()
         {
@@ -35,6 +37,15 @@ namespace CookingStar
                         textObj.SetActive(false);
                 }
             }
+
+            if (NoticeScore != null)
+            {
+                NoticeScore.SetActive(false);
+            }
+
+            ScoreManager.SaveAtDB(); // 결과 디비에 저장
+
+
         }
 
         public void DeactivateGameOver()
@@ -55,6 +66,11 @@ namespace CookingStar
                     if (textObj != null)
                         textObj.SetActive(true);
                 }
+            }
+
+            if (NoticeScore != null)
+            {
+                NoticeScore.SetActive(true);
             }
         }
     }

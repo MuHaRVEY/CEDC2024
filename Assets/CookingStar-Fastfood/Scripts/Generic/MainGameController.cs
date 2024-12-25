@@ -76,6 +76,9 @@ namespace CookingStar
 		static public int maxSlotState;             //maximum available slots in delivery queue (set in init)
 
 
+		public ScoreManager ScoreManager;
+
+
 		[Header("UI Objects")]
 		public GameObject gameoverPanelHolder;
 		public Text moneyText;
@@ -490,14 +493,16 @@ namespace CookingStar
 
 			// 게임 완료 처리
 			endPanelLabelUI.text = "Success!";
-			missionTargetUI.text = totalMoneyMade + " of " + requiredBalance;
-			missionTimeUI.text = (int)Time.timeSinceLevelLoad + " seconds";
+			//missionTargetUI.text = totalMoneyMade + " of " + requiredBalance;
+			missionTargetUI.text = ScoreManager.getPronunciationScore() + "점";
+			//missionTimeUI.text = (int)Time.timeSinceLevelLoad + " seconds";
+			missionTimeUI.text = ScoreManager.getAverageScore() + "점";
 			// resultStarsUI.sprite = availableStarIcons[5];
 			// resultHamburgersUI.sprite = availableHamburgerIcons[4];
 			int starsIndex = GetLevelStars();
     		int hamburgersIndex = GetLevelHambugers();
 			if (starsIndex >= 0 && starsIndex < availableStarIcons.Length)
-				resultStarsUI.sprite = availableStarIcons[starsIndex];
+				resultStarsUI.sprite = availableStarIcons[starsIndex];         
 			else
 				Debug.LogWarning("Invalid stars index: " + starsIndex);
 
@@ -546,8 +551,10 @@ namespace CookingStar
 				print("Time is up! You have failed :(");    //debug the result
 				gameIsFinished = true;                      //announce the new status to other classes
 				gameoverPanelHolder.SetActive(true);        //show the endGame plane
-				missionTargetUI.text = totalMoneyMade + " of " + requiredBalance;
-				missionTimeUI.text = (int)Time.timeSinceLevelLoad + " of " + availableTime;
+				//missionTargetUI.text = totalMoneyMade + " of " + requiredBalance;
+				missionTargetUI.text = ScoreManager.getPronunciationScore() + "점";
+				//missionTimeUI.text = (int)Time.timeSinceLevelLoad + " of " + availableTime;
+				missionTimeUI.text = ScoreManager.getAverageScore() + "점";
 				resultStarsUI.sprite = availableStarIcons[0];
 				resultHamburgersUI.sprite = availableHamburgerIcons[0];
 
@@ -571,8 +578,10 @@ namespace CookingStar
 				print("Wow, You beat the level! :)");
 				gameIsFinished = true;
 				gameoverPanelHolder.SetActive(true);
-				missionTargetUI.text = totalMoneyMade + " of " + requiredBalance;
-				missionTimeUI.text = (int)Time.timeSinceLevelLoad + " of " + availableTime;
+				//missionTargetUI.text = totalMoneyMade + " of " + requiredBalance;
+				missionTargetUI.text = ScoreManager.getPronunciationScore() + "점";
+				//missionTimeUI.text = (int)Time.timeSinceLevelLoad + " of " + availableTime;
+				missionTimeUI.text = ScoreManager.getAverageScore() + "점";
 				resultStarsUI.sprite = availableStarIcons[GetLevelStars()];
 				resultHamburgersUI.sprite = availableHamburgerIcons[GetLevelHambugers()];
 
@@ -655,6 +664,11 @@ namespace CookingStar
 			return hamburgers;
 		}
 
+		public int GetAvergeScore() // 햄버거 평균 점수 가져오기 (임시)
+        {
+			return 0;
+        }
+
 		public void ForceCustomersToLeave()
 		{
 			GameObject[] customers = GameObject.FindGameObjectsWithTag("customer");
@@ -666,6 +680,8 @@ namespace CookingStar
 				}
 			}
 		}
+
+		
 
 
 		//********************************************************

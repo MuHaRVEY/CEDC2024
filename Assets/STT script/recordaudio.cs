@@ -5,11 +5,13 @@ using UnityEngine.Networking;
 using System;
 using CookingStar;
 
+
 public class recordaudio : MonoBehaviour
 {
-    private const string ApiKey = "AIzaSyBZZzymFa8u1VAAbUbOgqvVTwIYlckhc34"; // Google Cloud API 키
+    private const string ApiKey = "AIzaSyDOb7GFYcZJs4sySTVgEzBUPlMcQvo2Duk"; // Google Cloud API 키
     private const string Url = "https://speech.googleapis.com/v1/speech:recognize?key=" + ApiKey;
     public IngredientsController ingredientsController;
+    public ScoreManager ScoreManager;
     private AudioClip audioClip; // 오디오 클립 객체               
     private string Device;  // 사용 중인 마이크 장치 이름
     private bool isRecording = false;
@@ -135,7 +137,7 @@ public class recordaudio : MonoBehaviour
         // 응답 처리
         if (request.result == UnityWebRequest.Result.Success)
         {
-            Debug.Log("Response: " + request.downloadHandler.text);
+            //Debug.Log("Response: " + request.downloadHandler.text);
             try
             {
                 ProcessGoogleResponse(request.downloadHandler.text);
@@ -152,6 +154,8 @@ public class recordaudio : MonoBehaviour
         }
     }
 
+    
+
     // Google API 응답 처리
     private void ProcessGoogleResponse(string jsonResponse)
     {
@@ -160,15 +164,21 @@ public class recordaudio : MonoBehaviour
         // JSON 응답 파싱
         try
         {
-            // IngredientsController에 결과 전달
             var response = JsonUtility.FromJson<GoogleSpeechResponse>(jsonResponse);
+
 
             if (response != null && response.results != null && response.results.Length > 0)
             {
                 string recognizedWord = response.results[0].alternatives[0].transcript.Trim();
-                Debug.Log($"Recognized Word: {recognizedWord}");
+                double confidenceScore = response.results[0].alternatives[0].confidence;
+                //Debug.Log($"Recognized Word: {recognizedWord}");
+                //Debug.Log($"confidenceScore: {confidenceScore}");
+
+                // 각 발음 점수 저장
+                ScoreManager.AddPronunciationScore(confidenceScore);
 
                 
+
                 if (ingredientsController != null)
                 {
                     Debug.Log("Calling IngredientsController.SelectIngredientByWord...");
@@ -187,10 +197,11 @@ public class recordaudio : MonoBehaviour
         catch (Exception ex)
         {
             Debug.LogError($"Error processing Google Response: {ex.Message}");
-            Debug.LogError($"Raw Response: {jsonResponse}");
         }
 
     }
+
+    
 
     [System.Serializable]
     public class GoogleSpeechResponse
@@ -208,6 +219,7 @@ public class recordaudio : MonoBehaviour
     public class Alternative
     {
         public string transcript;
+        public double confidence; // confidence 점수
     }
 
 }

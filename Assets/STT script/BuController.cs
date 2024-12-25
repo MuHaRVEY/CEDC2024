@@ -3,8 +3,8 @@ using UnityEngine.UI;
 
 public class BuController : MonoBehaviour
 {
-    public GameObject recordButton; //        ư       Ʈ
-    public recordaudio recordAudioScript; //        ũ  Ʈ     
+    public GameObject recordButton; 
+    public recordaudio recordAudioScript;  
 
     public GameObject stopButton;
 
@@ -28,36 +28,32 @@ public class BuController : MonoBehaviour
         {
             Debug.Log("recordAudioScript is properly assigned.");
         }
-        //                     ư     
+           
         if (recordButton != null) recordButton.SetActive(true);
         if (stopButton != null) stopButton.SetActive(false);
     }
 
     public void ShowRecordButton()
     {
-        //        ư Ȱ  ȭ
+       
         if (recordButton != null)
         {
-            recordButton.SetActive(true); //        ư Ȱ  ȭ
+            recordButton.SetActive(true); 
         }
     }
 
-    // public void OnRecordButtonClick()
-    // {
-    //     //   ư Ŭ               
-    //     recordAudioScript.StartRecordingAndSendToAPI();
-    // }
+    
     public void OnRecordButtonClick()
     {
         recordAudioScript.StartRecordingAndSendToAPI();
-        // if (recordButton != null) recordButton.SetActive(false);
+        
         if (stopButton != null) stopButton.SetActive(true);
     }
 
     public void OnStopButtonClick()
     {
         recordAudioScript.StopRecording();
-        // if (recordButton != null) recordButton.SetActive(true);
+        
         if (stopButton != null) stopButton.SetActive(false);
     }
 }

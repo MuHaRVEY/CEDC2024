@@ -8,9 +8,11 @@ namespace CookingStar
     {
         private static CustomerController instance = null; // ���� �ν��Ͻ��� Ȯ���ϱ� ���� ����
 
+        public ScoreManager ScoreManager;
+
         [Header("Customer Settings")]
         public float customerPatience = 120.0f; //기본값을 120으로 수정 
-         public int customerNeeds;
+        public int customerNeeds;
         public int customerSidereqNeeds = -1;
         public float customerMoveSpeed = 3f;
         public float askingSideRequestChance = 0.4f;
@@ -142,6 +144,7 @@ namespace CookingStar
                     customerNeeds = Random.Range(0, availableProducts.Length);
                 }
             }
+            //Debug.Log("Selected Product: " + availableProducts[customerNeeds].name); 손님 햄버거 정보 출력
 
             // //also let's give this customer a chance to wish a side-request.
             // if (askingSideRequestChance > Random.value)
@@ -211,6 +214,11 @@ namespace CookingStar
 
             //get product ingredients
             productIngredients = availableProducts[customerNeeds].GetComponent<ProductManager>().totalIngredients;
+            Debug.Log("재료 개수: " + productIngredients);
+            if (ScoreManager != null && productIngredients != null)
+            {
+                ScoreManager.setNumberofIngredients(productIngredients);    // 재료 개수를 ScoreManager에서 가져감
+            }
             //print(availableProducts[customerNeeds].name + " has " + productIngredients + " ingredients.");
             productIngredientsIDs = new int[productIngredients];
             for (int i = 0; i < productIngredients; i++)
@@ -885,5 +893,7 @@ namespace CookingStar
                 }
             }
         }
+
+        
     }
 }
