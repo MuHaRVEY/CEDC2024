@@ -16,6 +16,8 @@
 
 기존 재활 치료의 지루함을 줄이고, 사용자가 스스로 참여하면서 꾸준히 훈련하도록 설계
 
+<br><br>
+
 
 ### 구현 내용
 
@@ -56,22 +58,21 @@
 <br>
 <img width="200" height="150" alt="image" src="https://github.com/user-attachments/assets/59669a8b-0835-4e2d-ba71-2877a29c87d3" />
 
-<br>
-<br>
+<br><br><br>
 
 ### 시스템 흐름도 
 <img width="600" height="400" alt="image" src="https://github.com/user-attachments/assets/72a59fbe-3910-46bf-9c4d-d45997e0084f" />
 
-<br>
+<br><br>
 
-#### 기술 스택 요약
+### 기술 스택 요약
 - **게임 엔진:** Unity  
 - **음성 인식:** Google Cloud Speech-to-Text  
 - **근전도 센서:** Arduino 기반 EMG 센서 (Serial/BLE 통신)  
 - **데이터베이스:** MySQL / MariaDB / Firebase  
 - **플랫폼:** Android 모바일 앱
 
-<br>
+<br><br>
 
 ### 데모 영상
 
