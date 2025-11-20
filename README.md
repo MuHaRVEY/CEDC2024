@@ -61,16 +61,18 @@
 <br><br><br>
 
 ### 시스템 흐름도 
-<img width="600" height="400" alt="image" src="https://github.com/user-attachments/assets/72a59fbe-3910-46bf-9c4d-d45997e0084f" />
+<img width="600" height="400" alt="image" src="https://github.com/user-attachments/assets/d3ddfb82-848d-4cac-82e4-3bebf8216ffc" />
 
 <br><br>
 
-### 기술 스택 요약
+### 개발 환경
 - **게임 엔진:** Unity  
 - **음성 인식:** Google Cloud Speech-to-Text  
 - **근전도 센서:** Arduino 기반 EMG 센서 (Serial/BLE 통신)  
 - **데이터베이스:** MySQL / MariaDB / Firebase  
 - **플랫폼:** Android 모바일 앱
+
+<img width="600" height="300" alt="image" src="https://github.com/user-attachments/assets/4a563ee8-880d-4a0f-8e63-7c461c665730" />
 
 <br><br>
 
